@@ -10,8 +10,9 @@ tags:
   - Vercel
 title: Netlify、Vercel反代网站
 ---
-> [!ai] qwen/qwen3-vl-8b
-> Netlify支持IPv6回源实现公网访问，需配置redirects并绑定域名；Vercel因不支持IPv6仅限反代IPv4服务，需用CLI部署路由文件。
+> [!ai] gemini-3-flash-preview
+> 利用Netlify反代IPv6站点可解决家宽缺少公网IPv4的问题，需在GitHub仓库配置netlify.toml重定向规则并部署。Vercel虽支持通过JSON与CLI实现反代，但目前不支持IPv6。两方案均需完成域名绑定。
+
 
 
 # 原理思路

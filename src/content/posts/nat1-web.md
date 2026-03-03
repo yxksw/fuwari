@@ -8,8 +8,9 @@ category: '教程'
 draft: false 
 lang: ''
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 创建Cloudflare API令牌并赋予对应权限，配置动态重定向规则（含变量替换与端口绑定），将域名流量接管至Cloudflare，设置Lucky的DDNS、SSL、Web服务及STUN，通过WebHook同步规则变更，确保动态DNS与HTTPS重定向生效。
+> [!ai] gemini-3-flash-preview
+> 创建具备权限的Cloudflare API令牌，在Cloudflare设置通配符域名重定向规则并获取其API接口与Payload。在Lucky中配置DDNS、SSL及STUN服务，利用WebHook功能将STUN探测到的动态端口通过API实时同步至Cloudflare重定向规则，从而实现通过固定域名访问基于STUN的动态端口服务。
+
 
 
 # 配套视频

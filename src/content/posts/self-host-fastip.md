@@ -8,8 +8,9 @@ category: '教程'
 draft: false 
 lang: ''
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 优选域名需先筛选优质IP，通过多线路测试机+脚本（如Curl+Resolve）验证CDN IP段访问能力，再用华为云DNS（支持50IP/记录、多同名解析、1s TTL）绑定优选IP。三网优选需设默认线路防单线宕机，定期更新IP段防失效，勿写破坏性脚本，遭攻击时切回官方CNAME/IP避封禁。
+> [!ai] gemini-3-flash-preview
+> 优选域名需利用多线机子通过Curl+Resolve方式筛选CDN IP段，建议仅测试C段以提高效率。筛选结果经API同步至支持高容量记录与极低TTL的华为云海外版DNS。运维阶段需配置默认解析线路并实时监控IP段变动，若遇攻击应及时还原官方CNAME配置，避免因无法自动调度导致业务封禁。
+
 
 
 # 基本思路

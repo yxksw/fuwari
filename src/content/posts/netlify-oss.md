@@ -8,8 +8,9 @@ category: '记录'
 draft: false 
 lang: ''
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 申请Netlify OSS计划需提交开源项目信息，包含项目名、作者邮箱、贡献者证明、许可证及Netlify地址；作者提交后一日内获邮件确认开通，账户自动升级为Open Source计划，未通过可英文回复邮件询问。
+> [!ai] gemini-3-flash-preview
+> Netlify OSS计划不接受个人博客。申请者需将托管在该平台的开源项目信息提交至opensource-form.netlify.com，获批后账户将由Starter升级至Open Source。
+
 
 
 # 正式开始

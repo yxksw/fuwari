@@ -9,8 +9,9 @@ tags:
 - 记录
 title: 记录
 ---
-> [!ai] qwen/qwen3-vl-8b
-> ZeroTier设备ID重复时可通过删除`/var/lib/zerotier-one/identity.*`重置；ShellClash为CLI代理工具，支持导入Clash配置；Vless通用配置含无加密设置；AMD笔记本可禁用fTPM与自动更新；VPS融合怪脚本用于测试；哪吒探针支持Cloudflare；一键脚本可部署Hysteria2、V2Ray、x-ui；Hysteria2服务端需自签证书并配置监听；Cloudflare优选域名如fenliu.072103.xyz；魔法软件含v2rayN与v2rayNG；Cloudflared可中继RDP；FRP支持基础认证与systemd自启；Linux可安装Speedtest-cli；Linux监控面板未详述。
+> [!ai] gemini-3-flash-preview
+> ZeroTier重置ID需停止服务并删除identity文件。r2.py需安装keyboard、pillow等依赖。ShellClash实现Linux CLI代理。AMD笔记本优化需通过组策略禁用fTPM和Windows更新。提供Vless配置、VPS性能测试及Hysteria2、x-ui、EdgeTunnel等部署脚本，包含Cloudflare SaaS/Pages/Workers优选方案与RDP中继。推荐使用v2rayN/NG客户端。FRP需配置Token认证，Debian系统支持安装Speedtest-cli。
+
 
 
 # zt重置设备ID

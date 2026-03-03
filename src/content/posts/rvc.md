@@ -11,8 +11,9 @@ tags:
 draft: false
 lang: ""
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 训练角色音色模型需10分钟以上纯人声音频，使用RVC工具训练后生成.pth模型；用Replay加载模型与原曲生成AI翻唱人声；伴奏分离可选UVR（需适配50系显卡）或MSST，分别输出人声与伴奏。
+> [!ai] gemini-3-flash-preview
+> AI翻唱流程包含模型训练、歌曲转换及音轨分离：准备10-60分钟单音色素材，通过RVC训练生成.pth模型；利用Replay加载模型与原曲制作AI人声；使用UVR或MSST工具及特定模型提取伴奏与人声。
+
 
 # 视频教程
 

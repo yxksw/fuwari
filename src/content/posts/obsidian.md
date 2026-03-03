@@ -9,8 +9,9 @@ tags:
 draft: false
 lang: ""
 ---
-> [!ai] qwen/qwen3-vl-8b
-> Obsidian（黑曜石）以仓库为单位管理Markdown文件，每个仓库含`.obsidian`配置文件，配置仅限单仓库，频繁换仓库易丢失配置。建议将仓库设于`src/content`根目录，图片存放在`src/content/assets/images`，文章内用`../assets/images/xxx.webp`引用，黑曜石自动管理路径。默认图片为内部链接且含空格，需通过设置调整链接格式，并借助插件“Pasts image rename”自动重命名图片以兼容外部框架。关闭安全模式后安装并启用该插件，开启Auto rename可避免手动输入图片名。截图粘贴后自动生成带路径的图片标记。支持通过点选、下拉、勾选等方式便捷填写`published`、`tags`、布尔字段等元数据，无需手动格式化。
+> [!ai] gemini-3-flash-preview
+> Obsidian将文件夹视为仓库。适配Fuwari需以src/content为根目录，在设置中关闭Wikilinks并采用相对路径引用附件。安装Paste image rename插件可解决图片空格导致的链接失效问题。通过其属性面板，可可视化管理文章元数据、标签及布尔字段。
+
 
 > 视频链接： https://www.bilibili.com/video/BV1C7pDzpEHY
 # 下载

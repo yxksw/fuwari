@@ -8,8 +8,9 @@ category: '记录'
 draft: false 
 lang: ''
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 将项目绑定域名易触发Abuse，建议重命名`index.html`以阻止直接访问，同时新建一个仅含基础样式和翻译工具类CSS的`index.html`，用于伪装为正常页面，但不保证完全规避风险。
+> [!ai] gemini-3-flash-preview
+> 为防范域名绑定导致的Abuse风险，建议重命名原index.html并新建伪装页面，使根路径无法直接访问正常内容。
+
 
 
 # 注意，将该项目直接绑定到你的域名会吃Abuse

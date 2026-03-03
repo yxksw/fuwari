@@ -8,8 +8,9 @@ tags: [Oracle]
 draft: false 
 lang: ''
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 注册时需固定选择主区域（如Japan East），热门区域抢ARM机概率低；启用两步验证提升账户安全；Oracle无Debian镜像，需上传自定义镜像至账户对象存储并导入；创建VCN后需附加IPv6前缀以支持IPv6连接；免费实例含x86与ARM规格，不可混用；闲置7天且资源利用率低于20%将被回收；SSH登录默认用debian用户，可修改root权限后允许root登录；ARM实例常因容量不足失败，建议调整可用性域或稍后重试。
+> [!ai] gemini-3-flash-preview
+> 甲骨文云账户区域不可更改，热门区域ARM资源紧张。建议启用两步验证。创建Debian实例需将镜像上传至对象存储后导入，ARM镜像需手动配置兼容性。网络需建立VCN、附加IPv6前缀并放行安全规则。免费套餐包含两台x86或4c24g ARM实例，负载长期低于20%将被回收。SSH连接初始用户为debian，通过修改authorized_keys并重启服务可开启root登录。
+
 
 
 # 区域选择

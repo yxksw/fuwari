@@ -9,8 +9,9 @@ tags:
 - 生活
 title: 卧室布局整改记录
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 卧室从杂乱布线到整洁有序，仅凭清晨灵感一动完成改造。
+> [!ai] gemini-3-flash-preview
+> 整理了杂乱的卧室及布线。
+
 
 # 前言
 

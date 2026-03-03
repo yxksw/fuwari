@@ -8,8 +8,9 @@ category: '教程'
 draft: false 
 lang: ''
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 一行命令部署reality，自动配置并启动，无需手动操作。
+> [!ai] gemini-3-flash-preview
+> 一键安装Reality。
+
 
 
 # 正式开始

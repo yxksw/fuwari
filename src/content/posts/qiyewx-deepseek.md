@@ -8,8 +8,9 @@ category: '记录'
 draft: false 
 lang: ''
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 在企业微信工作台中创建智能机器人，通过角色设定注入提示词，即可完成配置并多渠道调用。
+> [!ai] gemini-3-flash-preview
+> 企业微信工作台创建并配置机器人。
+
 
 
 # 正式开始

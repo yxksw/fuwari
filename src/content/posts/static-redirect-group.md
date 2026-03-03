@@ -6,8 +6,9 @@ image: ../assets/images/static-redirect-group.webp
 draft: false
 lang: ""
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 该项目仅需一个Cloudflare Worker即可部署，无需前后端分离；前端极简，校验全在后端，突破2000重定向限制，通过CDN 404回退+JS重定向实现无限短链；创建逻辑代理GitHub写入规则并触发Worker重建；支持有效期，由GitHub Action定时清理；域名可选如2x.nz/.im/.mk；需Fork仓库、改硬编码、设Token与环境变量、绑定WAF防刷。
+> [!ai] gemini-3-flash-preview
+> Static_Redirect_Group是基于Cloudflare Worker与GitHub的短链系统，通过404 fallback机制配合JavaScript实现重定向，突破了静态规则数量限制。系统整合前后端逻辑，利用GitHub Action自动清理过期链接。部署需Fork仓库、修改HTML配置并配置GITHUB_TOKEN等环境变量。用户通过/_url页面创建短链，并建议设置WAF交互式质询以防护接口。
+
 
 # 前言
 本来不应该有这篇文章的，因为这篇文章就是一个该项目的简单自部署教程，应该写到仓库的README中，本来应该是让AI代工的，但是我发现它非常执着于那个b Github Page+Cloudflare Worker的神奇前后端分离，而且徒增了不少工作。其实该项目仅需一个Cloudflare Worker就行了，所以既然都要我手写了，我氵篇文章也是合情合理的吧

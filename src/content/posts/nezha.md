@@ -8,8 +8,9 @@ tags: [哪吒监控]
 draft: false 
 lang: ''
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 安装哪吒面板端（WebUI）需执行脚本并指定VPS IP:8008，支持TLS与多语言，登录默认admin/admin，需改密。后端Agent通过WebUI生成系统命令安装，中国大陆用户建议用raw.gitmirror.com镜像。支持服务监测（HTTP/TCP）与通知配置，CDN环境下需设真实IP头，Cloudflare兼容性差可改用yumusb/nezha-new。
+> [!ai] gemini-3-flash-preview
+> 通过官方脚本安装哪吒探针面板端，默认端口8008，初始账密为admin，需配置连接地址并修改默认密码。被控端Agent通过面板生成的命令部署，大陆环境建议使用镜像源。系统支持HTTP、Ping、TCP服务监测及宕机通知配置。若套CDN后IP显示异常，需在设置中配置真实IP请求头；Cloudflare连接故障可采用nezha-new项目解决。
+
 
 
 > 官方教程： https://nezha.wiki/

@@ -6,8 +6,9 @@ image: ../assets/images/shorter-url.webp
 draft: false
 lang: ""
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 使用Cloudflare Page/Worker实现短链服务，通过Worker动态更新重定向文件并结合前端让用户生成短链，需配置中间页防止被举报滥用，注意重定向限制（静态2000，动态100，单行≤1024），推荐购买.nz/.mk/.im等后缀短域名。
+> [!ai] gemini-3-flash-preview
+> 利用Cloudflare和GitHub重定向文件搭建短链服务，需配置中间页防滥用，并遵循系统重定向条数限制。
+
 
 # 视频
 https://www.bilibili.com/video/BV1BCi1B7E1q/

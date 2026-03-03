@@ -6,8 +6,8 @@ image: ""
 draft: false
 lang: ""
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 该站点使用Cloudflare Analytics、Umami、Giscus等必要及功能型Cookie收集基础访问数据并支持评论；同时启用百度统计、Google Analytics、Microsoft Clarity进行访问追踪；并部署Google Adsense提供广告服务。
+> [!ai] gemini-3-flash-preview
+> 站点利用Cloudflare、Umami、百度、Google及Clarity统计访问，通过Giscus提供评论并由Adsense投放广告。
 
 
 # All Cookies

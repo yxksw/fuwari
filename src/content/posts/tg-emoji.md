@@ -8,8 +8,9 @@ category: '教程'
 draft: false 
 lang: ''
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 准备100x100 PNG/WEBP图片，发送 /newemojipack 到 @Stickers，选 static 类型，命名如“Logo”，上传图片，配对应Emoji并发布，设置 pathname 链接即可添加；Telegram Premium 用户可将Emoji挂昵称旁。
+> [!ai] gemini-3-flash-preview
+> 向@Stickers发送/newemojipack上传100x100图片并发布，Premium用户可用于昵称显示。
+
 
 
 # 正式开始

@@ -8,8 +8,9 @@ category: '教程'
 draft: false 
 lang: ''
 ---
-> [!ai] qwen/qwen3-vl-8b
-> 安装 sshfs-win 及其图形管理器，配置连接后即可在文件资源管理器中访问远程 SSH 文件系统。
+> [!ai] gemini-3-flash-preview
+> 安装sshfs-win及管理工具，配置并建立连接后，即可在资源管理器挂载远程磁盘。
+
 
 
 # 正式开始
