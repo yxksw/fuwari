@@ -44,3 +44,6 @@ v0-gallery-website-main
 dev
 
 scripts/__pycache__/
+
+# Claude Code local workspace
+.claude/
