@@ -156,7 +156,6 @@ const bannerOffset =
 			<link rel="icon"
 				  href={favicon.src.startsWith('/') ? url(favicon.src) : favicon.src}
 				  sizes={favicon.sizes}
-				  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
 			/>
 		))}
 
@@ -303,10 +302,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script data-swup-ignore-script type="text/javascript" src="https://www.termsfeed.com/public/cookie-consent/4.2.0/cookie-consent.js" charset="UTF-8"></script>
 <script data-swup-ignore-script type="text/javascript" charset="UTF-8">
 (function () {
-	const getStoredTheme = () => {
-		return "dark";
-	};
-
 	const getPalette = () => {
 		return "dark";
 	};
@@ -365,11 +360,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 			scheduled = false;
 			const palette = getPalette();
 			document
-				.querySelectorAll(
-					".termsfeed-com---palette-dark, .termsfeed-com---palette-light",
-				)
+				.querySelectorAll("[class*='termsfeed-com---palette-']")
 				.forEach(el => {
-					el.classList.remove("termsfeed-com---palette-dark", "termsfeed-com---palette-light");
+					Array.from(el.classList)
+						.filter(className => className.startsWith("termsfeed-com---palette-"))
+						.forEach(className => el.classList.remove(className));
 					el.classList.add(`termsfeed-com---palette-${palette}`);
 				});
 			document
@@ -377,8 +372,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 					".cc_dialog, .cc_preferences, .cc_cp, .cc_nb, .cc_overlay, .cc_banner, .cc_modal",
 				)
 				.forEach(el => {
-					el.classList.remove("dark", "light");
-					el.classList.add(palette);
+					Array.from(el.classList)
+						.filter(className => className === "dark")
+						.forEach(className => el.classList.remove(className));
+					el.classList.add("dark");
 				});
 		});
 	};
@@ -517,7 +514,7 @@ var _hmt = _hmt || [];
 </style>
 
 <script>
-import {getHue, getStoredTheme, setHue, setTheme, getBgBlur, setBgBlur, getHideBg, setHideBg} from "../utils/setting-utils";
+import {getHue, setHue, setTheme, getBgBlur, setBgBlur, getHideBg, setHideBg} from "../utils/setting-utils";
 import {pathsEqual, url} from "../utils/url-utils";
 import { bindPostInlineDiff } from "../scripts/post-inline-diff";
 import {
@@ -594,8 +591,7 @@ setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-sw
 
 
 function loadTheme() {
-	const theme = getStoredTheme()
-	setTheme(theme)
+	setTheme()
 }
 
 function loadHue() {

@@ -1,5 +1,4 @@
 import { expressiveCodeConfig } from "@/config";
-import type { LIGHT_DARK_MODE } from "@/types/config";
 import { DARK_MODE } from "@constants/constants.ts";
 
 export function getDefaultHue(): number {
@@ -111,7 +110,7 @@ export function setDevServer(server: string): void {
 	localStorage.setItem("dev-server", server);
 }
 
-export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
+export function applyThemeToDocument() {
 	document.documentElement.classList.add("dark");
 	document.documentElement.setAttribute(
 		"data-theme",
@@ -119,11 +118,7 @@ export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
 	);
 }
 
-export function setTheme(theme: LIGHT_DARK_MODE): void {
+export function setTheme(): void {
 	localStorage.setItem("theme", DARK_MODE);
-	applyThemeToDocument(DARK_MODE);
-}
-
-export function getStoredTheme(): LIGHT_DARK_MODE {
-	return DARK_MODE;
+	applyThemeToDocument();
 }

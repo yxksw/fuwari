@@ -1,5 +1,3 @@
-import type { DARK_MODE } from "@constants/constants";
-
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
@@ -11,7 +9,6 @@ export type SiteConfig = {
 	themeColor: {
 		hue: number;
 		fixed: boolean;
-		forceDarkMode?: boolean;
 	};
 	banner: {
 		enable: boolean;
@@ -47,7 +44,6 @@ export type SiteConfig = {
 
 export type Favicon = {
 	src: string;
-	theme?: "light" | "dark";
 	sizes?: string;
 };
 
@@ -95,8 +91,6 @@ export type UmamiConfig = {
 	shareId: string;
 	timezone: string;
 };
-
-export type LIGHT_DARK_MODE = string;
 
 export type BlogPostData = {
 	body: string;

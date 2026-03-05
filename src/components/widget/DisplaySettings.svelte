@@ -1,5 +1,4 @@
 <script lang="ts">
-import { DARK_MODE } from "@constants/constants";
 import Icon from "@iconify/svelte";
 import {
 	getBgBlur,
@@ -10,21 +9,17 @@ import {
 	getHue,
 	getRainbowMode,
 	getRainbowSpeed,
-	getStoredTheme,
 	setBgBlur,
-	setBgHueRotate,
 	setDevMode,
 	setDevServer,
 	setHideBg,
 	setHue,
 	setRainbowMode,
 	setRainbowSpeed,
-	setTheme,
 } from "@utils/setting-utils";
 import { onMount } from "svelte";
 
 let hue = getHue();
-let theme = getStoredTheme();
 let isRainbowMode = getRainbowMode();
 let rainbowSpeed = getRainbowSpeed();
 let bgBlur = getBgBlur();

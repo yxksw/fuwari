@@ -3,36 +3,32 @@
 ### 有疑问？尝试 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/afoim/fuwari)
 
 > [!CAUTION]
-> 该仓库由 AcoFork 深度定制，并包含了最新的文章，如果你想以此为模板进行二改，需要一定的动手能力。
+> 本仓库为 AcoFork 深度定制版，包含最新文章与定制功能。若作为模板进行二次开发，建议具备一定 Astro / 前端工程经验。
 
-<img width="1858" height="948" alt="image" src="https://github.com/user-attachments/assets/55c2c63b-0dac-436e-aaa0-451ad2dfb65a" />
+一个基于 Astro 构建的现代化技术博客系统，面向内容创作、展示与长期维护场景。
 
-一个基于 Astro 构建的现代化个人博客主题，专注于技术分享与实践。
+## ✨ 核心能力
 
-## ✨ 特性
-
-- 🚀 基于 Astro 5.0+ 构建，性能卓越
-- 📱 完全响应式设计，支持移动端
-- 🌈 支持深色/浅色/自动主题切换 + 可自定义主题色彩
-- 🎨 彩虹模式，让页面更加缤纷
-- 📝 支持 Markdown 和 MDX 格式
-- 🔍 内置搜索功能
-- 📊 文章阅读时间统计
-- 🏷️ 标签和分类系统
-- 📈 SEO 优化
-- 💬 评论系统支持（Giscus）
-- 📡 RSS 订阅支持
-- 🎯 文章更新提醒
-- 🖼️ 内置画廊与封面生成器
+- 高性能静态站点（Astro 5）
+- 响应式布局与全局深色主题（dark-only）/ 彩虹模式
+- Markdown / MDX 内容发布与增强渲染
+- 全文检索、文章目录、阅读时长、更新提醒
+- 代码块增强（行号、折叠、复制按钮扩展）
+- 多模块页面：归档、友链、赞助、画廊、文件索引、封面生成
+- SEO 与分发：RSS、Sitemap、Robots、重定向
+- 统计能力：页面访问统计与可视化入口
+- 完整维护脚本：新建文章、图片清理、命名规范化、AI 摘要、差异更新等
 
 ## 🛠️ 技术栈
 
-- **框架**: Astro 5.x
-- **样式**: Tailwind CSS + Stylus
-- **交互**: Svelte 5
-- **构建工具**: Vite
-- **包管理**: pnpm
-- **代码规范**: Biome
+- **框架**：Astro 5.x
+- **交互**：Svelte 5
+- **样式**：Tailwind CSS + Stylus
+- **内容处理**：Remark / Rehype 扩展链路
+- **代码高亮**：Expressive Code
+- **页面过渡**：Swup
+- **包管理**：pnpm
+- **代码规范**：Biome
 
 ## 🚀 快速开始
 
@@ -47,7 +43,7 @@
 pnpm install
 ```
 
-### 开发模式
+### 本地开发
 
 ```bash
 pnpm dev
@@ -65,147 +61,113 @@ pnpm build
 pnpm preview
 ```
 
-## 📝 使用指南
+## 📌 常用命令
 
-### 创建新文章
+| 命令 | 作用 | 典型场景 |
+| --- | --- | --- |
+| `pnpm dev` | 启动开发服务器 | 日常开发 |
+| `pnpm build` | 执行图片 CDN 处理并构建静态站点 | 发布前验证 |
+| `pnpm preview` | 预览构建产物 | 上线前检查 |
+| `pnpm type-check` | TypeScript 类型检查 | 提交前质量把关 |
+| `pnpm lint` | Biome 检查并修复 | 统一代码风格 |
+| `pnpm format` | 代码格式化 | 批量整理代码 |
+| `pnpm new-post <slug>` | 快速创建新文章 | 内容生产 |
+| `pnpm clean` | 清理未引用图片 | 资源治理 |
+| `pnpm del-space` | 规范图片命名并更新引用 | 跨平台兼容 |
+| `pnpm imgf` | 修复相邻图片空行 | 提升渲染与 diff 稳定性 |
+| `pnpm update-diff` | 更新文章变更信息 | 更新通知 / 差异展示 |
+| `pnpm ai-summary` | 生成或更新文章 AI 摘要 | 内容增强 |
+| `pnpm watermark` | 批量添加图片水印 | 资源保护 |
+| `pnpm cdnify` | 将图片引用指向 CDN 资源 | 加速访问 |
 
-使用内置脚本快速创建新文章：
+## 🧩 功能模块
 
-```bash
-pnpm new-post helloword
-```
+### 1) 内容与文章系统
 
-### 清理未使用的图片
+- Markdown 内容发布（含 frontmatter）
+- 文章阅读时长、摘要、目录（TOC）
+- 外链处理、标题锚点、数学公式支持
+- 更新通知与文章差异展示组件
 
-清理 `src/content/assets` 目录下未被引用的图片文件：
+### 2) 页面模块
 
-```bash
-pnpm clean
-```
+- **首页 / 分页**：文章流与筛选展示
+- **归档页**：按时间聚合文章
+- **友链页**：友链展示与提交入口
+- **赞助页**：赞助信息与支持方式
+- **画廊页**：Masonry 瀑布流 + 灯箱浏览
+- **文件页**：本地公共资源索引 + OneDrive 浏览器
+- **封面页**：在线封面生成工具
 
-### 规范化图片文件名
+### 3) 交互与体验
 
-扫描 Markdown 文件中的图片引用，将文件名中的空格、逗号、多余的点等特殊字符移除，并同步更新文件引用。这有助于提高多构建平台的兼容性（某些平台不支持特殊字符文件名）。
+- Swup 页面切换与平滑滚动
+- 本地搜索与导航增强
+- 主题色切换、彩虹模式、显示设置
+- BackToTop、分页、文章排序等控件能力
 
-```bash
-pnpm del-space
-```
+## 🧠 内容增强能力
 
-### 修复相邻图片空行
+项目集成了较完整的内容处理链路：
 
-扫描 `src/content/**/*.md`，当两张图片紧挨着（连续两行 `![](...)`）时，在中间插入一个空行，避免渲染与 diff 匹配受相邻图片影响。
+- Remark：阅读时长、摘要、指令扩展、分节处理等
+- Rehype：标题锚点、外链策略、数学渲染、组件化渲染
+- 自定义增强：GitHub 风格提示块、URL/GitHub 卡片、AI 提示样式等
+- Expressive Code：行号、折叠、复制按钮扩展与主题定制
 
-```bash
-pnpm imgf
-```
+## ⚙️ 配置指南
 
-仅检测不写入：
+主要配置入口：`src/config.ts`
 
-```bash
-pnpm imgf --check
-```
+可配置内容包括：
 
-### 配置博客
+- 站点标题、描述、关键词、语言
+- 主题色、Banner、背景图
+- 导航菜单与个人信息
+- 目录深度、许可证、统计平台（Umami）
+- GitHub 编辑入口、图像回退策略
 
-编辑 `src/config.ts` 文件来自定义博客配置：
+如需调整构建行为与 Markdown 管线，请查看：`astro.config.mjs`。
 
-```typescript
-export const siteConfig: SiteConfig = {
-  title: "Fuwari",
-  subtitle: "技术分享与实践",
-  lang: "zh_CN",
-  themeColor: {
-    hue: 250,
-    fixed: false,
-  },
-  banner: {
-    enable: false,
-    src: "assets/images/demo-banner.png",
-    position: "center",
-  },
-  favicon: [
-    {
-      src: "/favicon/icon.png",
-    }
-  ]
-}
-```
+## 🌐 发布与 SEO
 
-### 文章格式
+项目已内置常见发布能力：
 
-文章使用 Markdown 格式，支持 frontmatter：
+- `rss.xml`：内容订阅
+- `sitemap.xml`：站点地图
+- `robots.txt`：抓取策略
+- Redirects：内置多条重定向规则
+- 静态输出：可部署到任意静态托管平台
 
-```markdown
----
-title: 文章标题
-published: 2024-01-01
-description: 文章描述
-image: ./cover.jpg
-tags: [标签1, 标签2]
-category: 分类
-draft: false
----
-
-# 文章内容
-
-这里是文章正文...
-```
+推荐平台：Vercel / Cloudflare Pages / Netlify / EdgeOne Pages。
 
 ## 📁 项目结构
 
-```
+```text
 ├── public/                 # 静态资源
 ├── src/
-│   ├── components/         # 组件
-│   ├── content/           # 内容
-│   │   ├── posts/         # 博客文章
-│   │   └── assets/        # 资源文件
-│   ├── layouts/           # 布局
-│   ├── pages/             # 页面
-│   ├── styles/            # 样式
-│   ├── plugins/           # 自定义插件
-│   ├── scripts/           # 脚本工具
-│   └── config.ts          # 配置文件
-├── scripts/               # 构建脚本
+│   ├── components/         # 页面与功能组件
+│   ├── content/            # 文章与内容资源
+│   ├── data/               # 友链/赞助等数据
+│   ├── layouts/            # 页面布局
+│   ├── pages/              # 路由页面
+│   ├── plugins/            # Remark/Rehype/代码块插件
+│   ├── styles/             # 全局样式
+│   ├── types/              # 类型定义
+│   └── config.ts           # 核心配置
+├── scripts/                # 维护与自动化脚本
 └── package.json
 ```
 
-## 🎨 自定义
-
-### 主题颜色
-
-在 `src/config.ts` 中修改 `themeColor` 配置：
-
-```typescript
-themeColor: {
-  hue: 250,        // 主色调 (0-360)
-  fixed: false,    // 是否固定颜色
-}
-```
-
-### 彩虹模式
-
-网站支持彩虹模式，可让页面更加缤纷！在设置面板中开启"彩虹模式"即可体验。
-
-### 样式定制
-
-- 全局样式：`src/styles/main.css`
-- Markdown 样式：`src/styles/markdown.css`
-- 变量定义：`src/styles/variables.styl`
-
-## 📦 部署
-
-构建后的静态文件位于 `dist/` 目录，可部署到任何静态托管平台。
-
-推荐平台：
-- Vercel
-- Cloudflare Pages
-- Netlify
-- EdgeOne Pages
-
 ## 🤝 贡献
 
-欢迎提交 Issue 和 Pull Request！详情请阅读 [贡献指南](CONTRIBUTING.md)。
+欢迎提交 Issue 与 Pull Request。提交前建议执行：
+
+```bash
+pnpm lint && pnpm type-check
+```
+
+详见：[CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## 📄 许可证
 
@@ -213,8 +175,4 @@ themeColor: {
 
 ## 🙏 致谢
 
-感谢所有为这个项目做出贡献的开发者们！尤其感谢[上游仓库](https://github.com/saicaca/fuwari)
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=afoim/fuwari&type=date&legend=top-left)](https://www.star-history.com/#afoim/fuwari&type=date&legend=top-left)
+感谢所有贡献者，特别感谢上游仓库：[saicaca/fuwari](https://github.com/saicaca/fuwari)
