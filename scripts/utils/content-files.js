@@ -13,9 +13,21 @@ export function buildMarkdownGlob(
 	targetDir,
 	extensions = ["md"],
 ) {
-	const extSet = new Set(extensions);
-	const extPart = Array.from(extSet).join(",");
-	return toGlobPath(path.join(targetDir, `**/*.{${extPart}}`));
+	const normalizedExt = Array.from(
+		new Set(
+			(extensions || [])
+				.map((ext) => String(ext).trim().replace(/^\./, ""))
+				.filter(Boolean),
+		),
+	);
+
+	const finalExt = normalizedExt.length > 0 ? normalizedExt : ["md"];
+	const pattern =
+		finalExt.length === 1
+			? path.join(targetDir, `**/*.${finalExt[0]}`)
+			: path.join(targetDir, `**/*.{${finalExt.join(",")}}`);
+
+	return toGlobPath(pattern);
 }
 
 export async function listFiles(patterns) {
