@@ -29,10 +29,24 @@ let baselineParsed = parseBaselineText(baselineText);
 
 let editMode = false;
 let draftParsed = cloneParsedData(baselineParsed);
-let previewViewModel = buildTimetableViewModel(draftParsed, viewModel.currentWeek);
+let previewViewModel = buildTimetableViewModel(
+	draftParsed,
+	viewModel.currentWeek,
+);
 let selectedArrangementRef: number | null = null;
 let validationError = "";
 let isDirty = false;
+let creatingCourse = false;
+
+type NewCourseDraft = {
+	courseName: string;
+	teacher: string;
+	room: string;
+	day: number;
+	startNode: number;
+	startWeek: number;
+	endWeek: number;
+};
 
 type ArrangementCardItem = {
 	arrangementIndex: number;
@@ -53,25 +67,31 @@ type ArrangementCardGroup = {
 let arrangementCards: ArrangementCardGroup[] = [];
 let selectedArrangement: TimetableCourseArrangement | null = null;
 let selectedCourseName = "";
+let newCourseDraft = createNewCourseDraft();
 
 $: visibleDays = viewModel.dayColumns.map((column) => column.day);
 $: maxNode = Math.max(...viewModel.nodeRows.map((row) => row.node), 1);
-$: arrangementCards = buildArrangementCards(previewViewModel, draftParsed.arrangements);
+$: arrangementCards = buildArrangementCards(
+	previewViewModel,
+	draftParsed.arrangements,
+);
 $: selectedArrangement =
 	selectedArrangementRef === null
 		? null
-		: draftParsed.arrangements[selectedArrangementRef] ?? null;
-$: selectedCourseName =
-	selectedArrangement
-	? draftParsed.courseDefinitions.find((course) => course.id === selectedArrangement?.id)
-			?.courseName || ""
+		: (draftParsed.arrangements[selectedArrangementRef] ?? null);
+$: selectedCourseName = selectedArrangement
+	? draftParsed.courseDefinitions.find(
+			(course) => course.id === selectedArrangement?.id,
+		)?.courseName || ""
 	: "";
 
 function parseBaselineText(text: string): ParsedTimetableData {
 	try {
 		return parseTimetableText(text);
 	} catch (error) {
-		throw new Error(error instanceof Error ? error.message : "课表基线数据解析失败");
+		throw new Error(
+			error instanceof Error ? error.message : "课表基线数据解析失败",
+		);
 	}
 }
 
@@ -133,10 +153,29 @@ function buildArrangementCards(
 	});
 }
 
+function createNewCourseDraft(): NewCourseDraft {
+	const defaultDay = visibleDays[0] ?? 1;
+	const maxWeek = Math.max(1, draftParsed.meta.maxWeek || 1);
+	return {
+		courseName: "",
+		teacher: "",
+		room: "",
+		day: defaultDay,
+		startNode: 1,
+		startWeek: 1,
+		endWeek: maxWeek,
+	};
+}
+
 function enterEditMode() {
 	draftParsed = cloneParsedData(baselineParsed);
-	previewViewModel = buildTimetableViewModel(draftParsed, viewModel.currentWeek);
+	previewViewModel = buildTimetableViewModel(
+		draftParsed,
+		viewModel.currentWeek,
+	);
 	selectedArrangementRef = null;
+	creatingCourse = false;
+	newCourseDraft = createNewCourseDraft();
 	validationError = "";
 	isDirty = false;
 	editMode = true;
@@ -148,16 +187,114 @@ function cancelEditMode() {
 
 function restoreBaselineAndExit() {
 	draftParsed = cloneParsedData(baselineParsed);
-	previewViewModel = buildTimetableViewModel(draftParsed, viewModel.currentWeek);
+	previewViewModel = buildTimetableViewModel(
+		draftParsed,
+		viewModel.currentWeek,
+	);
 	selectedArrangementRef = null;
+	creatingCourse = false;
+	newCourseDraft = createNewCourseDraft();
 	validationError = "";
 	isDirty = false;
 	editMode = false;
 }
 
 function selectArrangement(index: number) {
+	creatingCourse = false;
 	selectedArrangementRef = index;
 	validationError = "";
+}
+
+function beginCreateCourse() {
+	creatingCourse = true;
+	selectedArrangementRef = null;
+	validationError = "";
+	newCourseDraft = createNewCourseDraft();
+}
+
+function cancelCreateCourse() {
+	creatingCourse = false;
+	newCourseDraft = createNewCourseDraft();
+	validationError = "";
+}
+
+function updateNewCourseDraft(
+	field:
+		| "courseName"
+		| "teacher"
+		| "room"
+		| "day"
+		| "startNode"
+		| "startWeek"
+		| "endWeek",
+	value: string,
+) {
+	if (field === "courseName" || field === "teacher" || field === "room") {
+		(newCourseDraft as Record<string, string>)[field] = value;
+		return;
+	}
+
+	const nextValue = Number(value);
+	if (!Number.isFinite(nextValue)) {
+		return;
+	}
+	(newCourseDraft as Record<string, number>)[field] = Math.floor(nextValue);
+}
+
+function submitCreateCourse() {
+	const courseName = newCourseDraft.courseName.trim();
+	if (!courseName) {
+		validationError = "新增课程的课程名不能为空";
+		return;
+	}
+
+	const maxWeek = Math.max(1, draftParsed.meta.maxWeek || 1);
+	if (!visibleDays.includes(newCourseDraft.day)) {
+		validationError = "新增课程的星期不在当前课表显示范围内";
+		return;
+	}
+	if (newCourseDraft.startNode < 1 || newCourseDraft.startNode > maxNode) {
+		validationError = `新增课程的起始节次超出范围（1-${maxNode}）`;
+		return;
+	}
+	if (newCourseDraft.startWeek < 1 || newCourseDraft.endWeek < 1) {
+		validationError = "新增课程的周次必须大于等于 1";
+		return;
+	}
+	if (newCourseDraft.startWeek > newCourseDraft.endWeek) {
+		validationError = "新增课程的起止周非法（开始周不能大于结束周）";
+		return;
+	}
+	if (newCourseDraft.endWeek > maxWeek) {
+		validationError = `新增课程的结束周超出最大周次 ${maxWeek}`;
+		return;
+	}
+
+	const maxCourseId = draftParsed.courseDefinitions.reduce(
+		(maxId, course) => Math.max(maxId, course.id),
+		0,
+	);
+	const nextCourseId = maxCourseId + 1;
+	draftParsed.courseDefinitions.push({
+		id: nextCourseId,
+		courseName,
+	});
+	draftParsed.arrangements.push({
+		id: nextCourseId,
+		day: newCourseDraft.day,
+		startNode: newCourseDraft.startNode,
+		step: 2,
+		startWeek: newCourseDraft.startWeek,
+		endWeek: newCourseDraft.endWeek,
+		teacher: newCourseDraft.teacher,
+		room: newCourseDraft.room,
+	});
+
+	creatingCourse = false;
+	selectedArrangementRef = draftParsed.arrangements.length - 1;
+	validationError = "";
+	afterDraftChange();
+	newCourseDraft = createNewCourseDraft();
 }
 
 function updateSelectedArrangement(
@@ -202,7 +339,10 @@ function updateCourseName(value: string) {
 
 function afterDraftChange() {
 	validationError = validateDraft(draftParsed);
-	previewViewModel = buildTimetableViewModel(draftParsed, viewModel.currentWeek);
+	previewViewModel = buildTimetableViewModel(
+		draftParsed,
+		viewModel.currentWeek,
+	);
 	isDirty = true;
 }
 
@@ -248,8 +388,13 @@ function validateDraft(data: ParsedTimetableData): string {
 
 function resetDraft() {
 	draftParsed = cloneParsedData(baselineParsed);
-	previewViewModel = buildTimetableViewModel(draftParsed, viewModel.currentWeek);
+	previewViewModel = buildTimetableViewModel(
+		draftParsed,
+		viewModel.currentWeek,
+	);
 	selectedArrangementRef = null;
+	creatingCourse = false;
+	newCourseDraft = createNewCourseDraft();
 	validationError = "";
 	isDirty = false;
 }
@@ -302,6 +447,13 @@ function getEventValue(event: Event): string {
 			disabled={!isDirty}
 		>
 			重置
+		</button>
+		<button
+			type="button"
+			class="btn-regular rounded-lg px-3 py-2 text-sm font-medium"
+			on:click={beginCreateCourse}
+		>
+			新增课程
 		</button>
 		<button
 			type="button"
@@ -363,7 +515,111 @@ function getEventValue(event: Event): string {
 
 		<section class="rounded-xl border border-[var(--line-divider)] bg-[var(--card-bg)]/80 p-4">
 			<h3 class="mb-3 text-sm font-semibold text-white">属性编辑面板</h3>
-			{#if selectedArrangement}
+			{#if creatingCourse}
+				<div class="space-y-3">
+					<label class="block text-xs text-white/80">
+						<span class="mb-1 block">课程名</span>
+						<input
+							type="text"
+							class="w-full rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] px-3 py-2 text-sm"
+							value={newCourseDraft.courseName}
+							on:input={(event) =>
+								updateNewCourseDraft("courseName", getEventValue(event))}
+						/>
+					</label>
+
+					<label class="block text-xs text-white/80">
+						<span class="mb-1 block">教师</span>
+						<input
+							type="text"
+							class="w-full rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] px-3 py-2 text-sm"
+							value={newCourseDraft.teacher}
+							on:input={(event) => updateNewCourseDraft("teacher", getEventValue(event))}
+						/>
+					</label>
+
+					<label class="block text-xs text-white/80">
+						<span class="mb-1 block">教室</span>
+						<input
+							type="text"
+							class="w-full rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] px-3 py-2 text-sm"
+							value={newCourseDraft.room}
+							on:input={(event) => updateNewCourseDraft("room", getEventValue(event))}
+						/>
+					</label>
+
+					<label class="block text-xs text-white/80">
+						<span class="mb-1 block">星期</span>
+						<select
+							class="w-full rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] px-3 py-2 text-sm"
+							value={getNumberValue(newCourseDraft.day)}
+							on:change={(event) => updateNewCourseDraft("day", getEventValue(event))}
+						>
+							{#each visibleDays as day}
+								<option value={String(day)}>{dayLabels[day]}</option>
+							{/each}
+						</select>
+					</label>
+
+					<label class="block text-xs text-white/80">
+						<span class="mb-1 block">起始节</span>
+						<input
+							type="number"
+							min="1"
+							max={String(maxNode)}
+							class="w-full rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] px-3 py-2 text-sm"
+							value={getNumberValue(newCourseDraft.startNode)}
+							on:input={(event) =>
+								updateNewCourseDraft("startNode", getEventValue(event))}
+						/>
+					</label>
+
+					<div class="grid grid-cols-2 gap-2">
+						<label class="block text-xs text-white/80">
+							<span class="mb-1 block">起始周</span>
+							<input
+								type="number"
+								min="1"
+								max={String(draftParsed.meta.maxWeek)}
+								class="w-full rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] px-3 py-2 text-sm"
+								value={getNumberValue(newCourseDraft.startWeek)}
+								on:input={(event) =>
+									updateNewCourseDraft("startWeek", getEventValue(event))}
+							/>
+						</label>
+
+						<label class="block text-xs text-white/80">
+							<span class="mb-1 block">结束周</span>
+							<input
+								type="number"
+								min="1"
+								max={String(draftParsed.meta.maxWeek)}
+								class="w-full rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] px-3 py-2 text-sm"
+								value={getNumberValue(newCourseDraft.endWeek)}
+								on:input={(event) =>
+									updateNewCourseDraft("endWeek", getEventValue(event))}
+							/>
+						</label>
+					</div>
+
+					<div class="flex items-center gap-2 pt-1">
+						<button
+							type="button"
+							class="btn-regular rounded-lg px-3 py-2 text-sm font-medium"
+							on:click={submitCreateCourse}
+						>
+							保存新增课程
+						</button>
+						<button
+							type="button"
+							class="btn-regular rounded-lg px-3 py-2 text-sm font-medium"
+							on:click={cancelCreateCourse}
+						>
+							取消新增
+						</button>
+					</div>
+				</div>
+			{:else if selectedArrangement}
 				<div class="space-y-3">
 					<label class="block text-xs text-white/80">
 						<span class="mb-1 block">课程名</span>
@@ -403,7 +659,7 @@ function getEventValue(event: Event): string {
 							on:change={(event) => updateSelectedArrangement("day", getEventValue(event))}
 						>
 							{#each visibleDays as day}
-								<option value={day}>{dayLabels[day]}</option>
+								<option value={String(day)}>{dayLabels[day]}</option>
 							{/each}
 						</select>
 					</label>
@@ -450,7 +706,7 @@ function getEventValue(event: Event): string {
 					</div>
 				</div>
 			{:else}
-				<p class="text-sm text-white/80">请先在左侧点击一条课程卡片后再编辑。</p>
+				<p class="text-sm text-white/80">请先在左侧点击课程卡片，或点击上方“新增课程”。</p>
 			{/if}
 		</section>
 	</div>
