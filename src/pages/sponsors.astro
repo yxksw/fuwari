@@ -183,7 +183,20 @@ const breadcrumbSchema = {
 }
 
 .sponsors-grid {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+    columns: 3;
+    column-gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+    .sponsors-grid {
+        columns: 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .sponsors-grid {
+        columns: 1;
+    }
 }
 
 .sponsor-placeholder {
@@ -192,5 +205,7 @@ const breadcrumbSchema = {
 
 .sponsor-card {
     @apply transition-all duration-200 hover:shadow-md hover:scale-105;
+    break-inside: avoid;
+    margin-bottom: 1rem;
 }
 </style>
