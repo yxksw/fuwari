@@ -46,7 +46,7 @@ function formatDate(date: Date) {
     <div class="mb-6 flex flex-wrap items-center gap-2" data-archive-filters>
         <button
             type="button"
-            class="archive-filter-btn is-active"
+            class="archive-filter-btn btn-regular is-active"
             data-year-filter="all"
             aria-pressed="true"
         >
@@ -55,7 +55,7 @@ function formatDate(date: Date) {
         {years.map((year) => (
             <button
                 type="button"
-                class="archive-filter-btn"
+                class="archive-filter-btn btn-regular"
                 data-year-filter={String(year)}
                 aria-pressed="false"
             >
@@ -116,7 +116,7 @@ function formatDate(date: Date) {
 
 <style>
     .archive-filter-btn {
-        @apply btn-regular rounded-lg px-3 py-1.5 text-sm font-medium transition active:scale-95;
+        @apply rounded-lg px-3 py-1.5 text-sm font-medium transition active:scale-95;
     }
 
     .archive-filter-btn.is-active {
