@@ -323,6 +323,16 @@ function updateSelectedArrangement(
 	afterDraftChange();
 }
 
+function deleteSelectedArrangement() {
+	if (selectedArrangementRef === null) {
+		return;
+	}
+
+	draftParsed.arrangements.splice(selectedArrangementRef, 1);
+	selectedArrangementRef = null;
+	afterDraftChange();
+}
+
 function updateCourseName(value: string) {
 	if (!selectedArrangement) {
 		return;
@@ -703,6 +713,16 @@ function getEventValue(event: Event): string {
 									updateSelectedArrangement("endWeek", getEventValue(event))}
 							/>
 						</label>
+					</div>
+
+					<div class="flex items-center gap-2 pt-1">
+						<button
+							type="button"
+							class="btn-regular rounded-lg px-3 py-2 text-sm font-medium text-red-300 hover:bg-red-500/20"
+							on:click={deleteSelectedArrangement}
+						>
+							删除课程
+						</button>
 					</div>
 				</div>
 			{:else}
