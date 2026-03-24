@@ -39,7 +39,8 @@ let isDirty = false;
 let creatingCourse = false;
 
 let dragStartIndex: number | null = null;
-let dragOverIndex: number | null = null;
+let dragOverDay: number | null = null;
+let dragOverPosition: "before" | "after" | null = null;
 
 type NewCourseDraft = {
 	courseName: string;
@@ -357,37 +358,78 @@ function handleDragStart(event: DragEvent, index: number) {
 	dragStartIndex = index;
 }
 
-function handleDragOver(event: DragEvent, index: number) {
+function handleDragOver(
+	event: DragEvent,
+	day: number,
+	position: "before" | "after",
+) {
 	event.preventDefault();
-	if (!event.dataTransfer) return;
-	event.dataTransfer.dropEffect = "move";
-	dragOverIndex = index;
+	dragOverDay = day;
+	dragOverPosition = position;
 }
 
 function handleDragLeave() {
-	dragOverIndex = null;
+	dragOverDay = null;
+	dragOverPosition = null;
 }
 
-function handleDrop(event: DragEvent, targetIndex: number) {
+function handleDrop(
+	event: DragEvent,
+	targetDay: number,
+	targetPosition: "before" | "after",
+) {
 	event.preventDefault();
 	const sourceIndex = dragStartIndex;
-	if (sourceIndex === null || sourceIndex === targetIndex) {
+	if (sourceIndex === null) {
 		dragStartIndex = null;
-		dragOverIndex = null;
+		dragOverDay = null;
+		dragOverPosition = null;
 		return;
 	}
 
+	const sourceArrangement = draftParsed.arrangements[sourceIndex];
+	if (!sourceArrangement) {
+		dragStartIndex = null;
+		dragOverDay = null;
+		dragOverPosition = null;
+		return;
+	}
+
+	const targetDayItems = draftParsed.arrangements
+		.map((arr, idx) => ({ arr, idx }))
+		.filter(({ arr }) => arr.day === targetDay)
+		.sort((a, b) => a.arr.startNode - b.arr.startNode);
+
+	const targetIndex =
+		targetPosition === "before"
+			? (targetDayItems[0]?.idx ?? targetDay)
+			: (targetDayItems[targetDayItems.length - 1]?.idx ?? targetDay);
+
+	let insertIndex: number;
+	if (targetPosition === "before") {
+		insertIndex = targetIndex;
+	} else {
+		const sameDayItems = targetDayItems.filter(
+			(item) =>
+				item.idx < sourceIndex ||
+				(sourceIndex !== null && item.idx > targetIndex),
+		);
+		insertIndex = sameDayItems.length > 0 ? targetIndex : targetIndex + 1;
+	}
+
 	const [removed] = draftParsed.arrangements.splice(sourceIndex, 1);
-	draftParsed.arrangements.splice(targetIndex, 0, removed);
+	draftParsed.arrangements.splice(insertIndex, 0, removed);
 
 	dragStartIndex = null;
-	dragOverIndex = null;
+	dragOverDay = null;
+	dragOverPosition = null;
 	afterDraftChange();
 }
 
 function handleDragEnd() {
 	dragStartIndex = null;
-	dragOverIndex = null;
+	dragOverDay = null;
+	dragOverPosition = null;
 }
 
 function afterDraftChange() {
@@ -548,16 +590,13 @@ function getEventValue(event: Event): string {
 							<p class="text-xs text-white/70">本日暂无课程</p>
 						{:else}
 							<div class="flex flex-col gap-2">
-								{#each dayGroup.items as item, itemIndex}
+								{#each dayGroup.items as item}
 									<button
 										type="button"
-										class={`w-full rounded-lg border px-3 py-2 text-left transition cursor-move ${selectedArrangementRef === item.arrangementIndex ? "border-[var(--primary)] bg-[var(--primary)]/15" : "border-[var(--line-divider)]/70 bg-[var(--card-bg)]/60 hover:border-[var(--primary)]/50"} ${dragOverIndex === item.arrangementIndex ? "border-t-2 border-t-[var(--primary)]" : ""}`}
+										class="w-full rounded-lg border px-3 py-2 text-left transition cursor-move {selectedArrangementRef === item.arrangementIndex ? "border-[var(--primary)] bg-[var(--primary)]/15" : "border-[var(--line-divider)]/70 bg-[var(--card-bg)]/60 hover:border-[var(--primary)]/50"}"
 										draggable="true"
 										on:click={() => selectArrangement(item.arrangementIndex)}
 										on:dragstart={(e) => handleDragStart(e, item.arrangementIndex)}
-										on:dragover={(e) => handleDragOver(e, item.arrangementIndex)}
-										on:dragleave={handleDragLeave}
-										on:drop={(e) => handleDrop(e, item.arrangementIndex)}
 										on:dragend={handleDragEnd}
 									>
 										<div class="mb-1 text-sm font-semibold" style={`color:${item.color}`}>{item.title}</div>
@@ -565,6 +604,12 @@ function getEventValue(event: Event): string {
 										<div class="text-xs text-white/60">{item.teacher} / {item.room}</div>
 									</button>
 								{/each}
+								<div
+									class="min-h-[2rem] w-full rounded border border-dashed border-[var(--line-divider)]/50 transition-all {dragOverDay === dayGroup.day ? "border-[var(--primary)] bg-[var(--primary)]/10" : ""}"
+									on:dragover={(e) => handleDragOver(e, dayGroup.day, "after")}
+									on:dragleave={handleDragLeave}
+									on:drop={(e) => handleDrop(e, dayGroup.day, "after")}
+								></div>
 							</div>
 						{/if}
 					</div>
