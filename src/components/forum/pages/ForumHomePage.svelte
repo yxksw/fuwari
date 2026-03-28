@@ -200,12 +200,8 @@
 
 <div class="space-y-6">
 	<div class="card-base p-6 md:p-8">
-		<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+		<div class="mb-6 flex flex-col gap-4">
 			<div>
-				<div class="mb-2 flex items-center gap-2">
-					<Icon icon="material-symbols:forum-outline-rounded" class="text-3xl text-[var(--primary)]" />
-					<h1 class="text-2xl font-bold text-white">论坛广场</h1>
-				</div>
 				<p class="text-sm text-white/45">i.2x.nz 论坛已将前端接入官网，如遇前端Bug，请反馈至 <a href="https://github.com/afoim/fuwari/issues" target="_blank" rel="noreferrer" class="text-[var(--primary)] underline decoration-dashed underline-offset-4">Fuwari</a>，如遇后端Bug，请反馈至 <a href="https://github.com/afoim/forum_for_cloudflare/issues" target="_blank" rel="noreferrer" class="text-[var(--primary)] underline decoration-dashed underline-offset-4">forum_for_cloudflare</a>。如果你不知道某个Bug是哪个端导致的，可以前往置顶帖评论反馈</p>
 			</div>
 			<div class="flex flex-wrap gap-3">
