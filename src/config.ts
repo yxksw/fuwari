@@ -108,8 +108,8 @@ export const navBarConfig: NavBarConfig = {
 		},
 		{
 			name: "论坛",
-			url: "https://i.2x.nz",
-			external: true,
+			url: "/forum/",
+			external: false,
 			icon: "material-symbols:forum-outline-rounded",
 		},
 	],

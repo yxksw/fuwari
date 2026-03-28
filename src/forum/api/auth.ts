@@ -1,0 +1,380 @@
+import type { RegisterResult, SessionResult } from "@/forum/types/api";
+import type { ForumUser, ForgotPasswordPayload, LoginPayload, RegisterPayload, ResetPasswordPayload } from "@/forum/types/user";
+import { forumRequest } from "./client";
+
+interface RawSessionUser {
+	id: string | number;
+	email?: string;
+	username?: string;
+	display_name?: string;
+	displayName?: string;
+	avatar_url?: string | null;
+	avatarUrl?: string | null;
+	role?: string | number;
+	is_admin?: boolean | number;
+	isAdmin?: boolean | number;
+	created_at?: string;
+	createdAt?: string;
+	email_notifications?: boolean;
+	emailNotifications?: boolean;
+	totp_enabled?: boolean | number;
+	totpEnabled?: boolean | number;
+	two_factor_enabled?: boolean | number;
+	mfa_enabled?: boolean | number;
+	verified?: number | boolean;
+	email_verified?: number | boolean;
+	emailVerified?: boolean | number;
+}
+
+interface RawSessionResult {
+	token?: string | null;
+	error?: string;
+	user?: RawSessionUser | null;
+	id?: string | number;
+	email?: string;
+	username?: string;
+	display_name?: string;
+	displayName?: string;
+	avatar_url?: string | null;
+	avatarUrl?: string | null;
+	role?: string | number;
+	is_admin?: boolean | number;
+	isAdmin?: boolean | number;
+	created_at?: string;
+	createdAt?: string;
+	email_notifications?: boolean;
+	emailNotifications?: boolean;
+	totp_enabled?: boolean | number;
+	totpEnabled?: boolean | number;
+	two_factor_enabled?: boolean | number;
+	mfa_enabled?: boolean | number;
+	verified?: number | boolean;
+	email_verified?: number | boolean;
+	emailVerified?: boolean | number;
+}
+
+interface ProfilePayload {
+	username?: string;
+	displayName?: string;
+	avatarUrl?: string;
+	emailNotifications?: boolean;
+}
+
+export type ForumUploadType = "post" | "comment" | "avatar";
+
+interface UploadPayload {
+	file: File;
+	type: ForumUploadType;
+	postId?: string;
+}
+
+interface UploadResult {
+	url?: string;
+	path?: string;
+}
+
+interface ChangeEmailPayload {
+	newEmail: string;
+	totpCode?: string;
+}
+
+interface TotpSetupResult {
+	secret: string;
+	uri?: string;
+	otpauth_url?: string;
+}
+
+interface TotpVerifyPayload {
+	token: string;
+}
+
+interface TotpStatusResult {
+	totp_enabled?: boolean | number;
+}
+
+interface DeleteAccountPayload {
+	password: string;
+	totpCode?: string;
+}
+
+interface CurrentUserAvatarResult {
+	avatar_url?: string | null;
+}
+
+function normalizeRole(user?: RawSessionUser | null) {
+	if (!user) {
+		return undefined;
+	}
+
+	if (user.is_admin === true || user.is_admin === 1) {
+		return "admin";
+	}
+
+	const rawRole = user.role;
+	if (typeof rawRole === "number") {
+		return rawRole === 1 ? "admin" : String(rawRole);
+	}
+	if (typeof rawRole === "string") {
+		const normalizedRole = rawRole.trim().toLowerCase();
+		if (["admin", "administrator", "root", "superadmin", "super_admin"].includes(normalizedRole)) {
+			return "admin";
+		}
+		return normalizedRole;
+	}
+
+	return undefined;
+}
+
+function toOptionalBoolean(value: unknown): boolean | undefined {
+	if (value === undefined || value === null || value === "") {
+		return undefined;
+	}
+	if (typeof value === "boolean") {
+		return value;
+	}
+	if (typeof value === "number") {
+		return value !== 0;
+	}
+	if (typeof value === "string") {
+		const normalized = value.trim().toLowerCase();
+		if (["1", "true", "yes", "on", "enabled"].includes(normalized)) {
+			return true;
+		}
+		if (["0", "false", "no", "off", "disabled"].includes(normalized)) {
+			return false;
+		}
+	}
+	return undefined;
+}
+
+function normalizeUser(user?: RawSessionUser | null): ForumUser | null {
+	if (!user) {
+		return null;
+	}
+
+	return {
+		id: String(user.id),
+		email: user.email,
+		username: user.username || user.email || "用户",
+		displayName: user.display_name || user.displayName || user.username,
+		avatarUrl: user.avatar_url || user.avatarUrl || undefined,
+		role: normalizeRole(user),
+		createdAt: user.created_at || user.createdAt,
+		emailNotifications: user.email_notifications ?? user.emailNotifications,
+		totpEnabled: toOptionalBoolean(user.totp_enabled ?? user.totpEnabled ?? user.two_factor_enabled ?? user.mfa_enabled),
+		verified: toOptionalBoolean(user.verified ?? user.email_verified ?? user.emailVerified),
+	};
+}
+
+function resolveSessionUser(result: RawSessionResult) {
+	if (result.user) {
+		return result.user;
+	}
+	if (result.id !== undefined || result.email || result.username) {
+		return {
+			id: result.id || "",
+			email: result.email,
+			username: result.username,
+			display_name: result.display_name,
+			displayName: result.displayName,
+			avatar_url: result.avatar_url,
+			avatarUrl: result.avatarUrl,
+			role: result.role,
+			is_admin: result.is_admin,
+			isAdmin: result.isAdmin,
+			created_at: result.created_at,
+			createdAt: result.createdAt,
+			email_notifications: result.email_notifications,
+			emailNotifications: result.emailNotifications,
+			totp_enabled: result.totp_enabled,
+			totpEnabled: result.totpEnabled,
+			two_factor_enabled: result.two_factor_enabled,
+			mfa_enabled: result.mfa_enabled,
+			verified: result.verified,
+			email_verified: result.email_verified,
+			emailVerified: result.emailVerified,
+		} satisfies RawSessionUser;
+	}
+	return null;
+}
+
+function normalizeSession(result: RawSessionResult): SessionResult {
+	return {
+		token: result.token ?? null,
+		requiresTotp: result.error === "TOTP_REQUIRED",
+		user: normalizeUser(resolveSessionUser(result)),
+	};
+}
+
+export async function login(payload: LoginPayload) {
+	const result = await forumRequest<RawSessionResult>("/api/login", {
+		method: "POST",
+		json: {
+			email: payload.email,
+			password: payload.password,
+			totp_code: payload.totpCode,
+			"cf-turnstile-response": payload.turnstileToken,
+		},
+	});
+	return normalizeSession(result);
+}
+
+export async function register(payload: RegisterPayload) {
+	const result = await forumRequest<RegisterResult>("/api/register", {
+		method: "POST",
+		json: {
+			username: payload.username,
+			email: payload.email,
+			password: payload.password,
+			"cf-turnstile-response": payload.turnstileToken,
+		},
+	});
+	return {
+		success: Boolean(result.success),
+		message: result.message || "注册成功，请前往邮箱完成验证。",
+	} satisfies RegisterResult;
+}
+
+export async function getSession() {
+	const result = await forumRequest<RawSessionResult>("/api/session", {
+		requiresAuth: true,
+	});
+	return normalizeSession(result);
+}
+
+export async function getCurrentUserAvatar() {
+	const result = await forumRequest<CurrentUserAvatarResult>("/api/user/avatar", {
+		requiresAuth: true,
+	});
+	return result.avatar_url || "";
+}
+
+export async function updateProfile(payload: ProfilePayload) {
+	const result = await forumRequest<{ user?: RawSessionUser }>("/api/user/profile", {
+		method: "POST",
+		requiresAuth: true,
+		json: {
+			username: payload.username,
+			display_name: payload.displayName,
+			avatar_url: payload.avatarUrl,
+			email_notifications: payload.emailNotifications,
+		},
+	});
+	return normalizeUser(result.user);
+}
+
+export async function uploadFile({ file, type, postId }: UploadPayload) {
+	const formData = new FormData();
+	formData.append("file", file);
+	formData.append("type", type);
+	if (postId) {
+		formData.append("post_id", postId);
+	}
+
+	const result = await forumRequest<UploadResult>("/api/upload", {
+		method: "POST",
+		requiresAuth: true,
+		body: formData,
+	});
+	return result.url || result.path || "";
+}
+
+export function uploadAvatar(file: File) {
+	return uploadFile({ file, type: "avatar" });
+}
+
+export function changeEmail(payload: ChangeEmailPayload) {
+	return forumRequest<{ success?: boolean; message?: string }>("/api/user/change-email", {
+		method: "POST",
+		requiresAuth: true,
+		json: {
+			new_email: payload.newEmail,
+			totp_code: payload.totpCode,
+		},
+	});
+}
+
+export async function verifyEmailChange(token?: string) {
+	const result = await forumRequest<{ success?: boolean; message?: string; user?: RawSessionUser }>("/api/verify-email-change", {
+		requiresAuth: true,
+		query: {
+			token,
+		},
+	});
+	return {
+		success: result.success,
+		message: result.message,
+		user: normalizeUser(result.user),
+	};
+}
+
+export async function getTotpStatus() {
+	const result = await forumRequest<TotpStatusResult>("/api/user/totp/status", {
+		requiresAuth: true,
+	});
+	return toOptionalBoolean(result.totp_enabled);
+}
+
+export async function setupTotp() {
+	const result = await forumRequest<TotpSetupResult>("/api/user/totp/setup", {
+		method: "POST",
+		requiresAuth: true,
+		json: {},
+	});
+	return {
+		secret: result.secret,
+		uri: result.uri || result.otpauth_url || "",
+	};
+}
+
+export async function verifyTotp(payload: TotpVerifyPayload) {
+	const result = await forumRequest<{ success?: boolean; user?: RawSessionUser }>("/api/user/totp/verify", {
+		method: "POST",
+		requiresAuth: true,
+		json: payload,
+	});
+	return {
+		success: result.success,
+		user: normalizeUser(result.user),
+	};
+}
+
+export function deleteAccount(payload: DeleteAccountPayload) {
+	return forumRequest<{ success?: boolean }>("/api/user/delete", {
+		method: "POST",
+		requiresAuth: true,
+		json: {
+			password: payload.password,
+			totp_code: payload.totpCode,
+		},
+	});
+}
+
+export function forgotPassword(payload: ForgotPasswordPayload) {
+	return forumRequest<{ success?: boolean }>("/api/auth/forgot-password", {
+		method: "POST",
+		json: {
+			email: payload.email,
+			"cf-turnstile-response": payload.turnstileToken,
+		},
+	});
+}
+
+export function resetPassword(payload: ResetPasswordPayload) {
+	return forumRequest<{ success?: boolean }>("/api/auth/reset-password", {
+		method: "POST",
+		json: {
+			token: payload.token,
+			new_password: payload.newPassword,
+			totp_code: payload.totpCode,
+			"cf-turnstile-response": payload.turnstileToken,
+		},
+	});
+}
+
+export function logout() {
+	return forumRequest<{ success: boolean }>("/api/logout", {
+		method: "POST",
+		requiresAuth: true,
+	});
+}

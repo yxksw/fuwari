@@ -1,0 +1,9 @@
+---
+export function getStaticPaths() {
+	return Array.from({ length: 500 }, (_, index) => ({
+		params: { id: String(index + 1) },
+	}));
+}
+
+return Astro.redirect(`/forum/post/?id=${encodeURIComponent(Astro.params.id || "")}`, 301);
+---
