@@ -37,13 +37,27 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
 	allowedSchemes: ["http", "https", "mailto"],
 };
 
+function applyExternalLinkTarget(htmlText: string) {
+	const root = parseHtml(htmlText);
+	for (const anchor of root.querySelectorAll("a")) {
+		const href = anchor.getAttribute("href")?.trim();
+		if (!href || !/^https?:\/\//i.test(href)) {
+			continue;
+		}
+		anchor.setAttribute("target", "_blank");
+		anchor.setAttribute("rel", "noopener noreferrer");
+	}
+	return root.toString();
+}
+
 export function renderForumMarkdown(markdownText?: string) {
 	if (!markdownText) {
 		return "";
 	}
 
 	const renderedHtml = markdown.render(markdownText);
-	return sanitizeHtml(renderedHtml, sanitizeOptions);
+	const sanitizedHtml = sanitizeHtml(renderedHtml, sanitizeOptions);
+	return applyExternalLinkTarget(sanitizedHtml);
 }
 
 export function extractFirstImageUrlFromMarkdown(markdownText?: string) {

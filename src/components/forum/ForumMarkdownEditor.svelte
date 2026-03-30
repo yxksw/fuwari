@@ -219,7 +219,7 @@
 
 <style>
 	:global(.forum-editor-shell .toastui-editor-defaultUI) {
-		zoom: 0.7;
+		zoom: 0.8;
 		border-radius: 1rem;
 		overflow: hidden;
 		border: 1px solid rgb(255 255 255 / 0.1);
