@@ -40,6 +40,13 @@
 		sessionTtlDays: 7,
 	};
 
+	function truncateDisplayName(value?: string, maxLength = 10) {
+		if (!value) {
+			return "";
+		}
+		return value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
+	}
+
 	let loading = true;
 	let refreshing = false;
 	let status = "";
@@ -618,8 +625,8 @@
 											<Icon icon="material-symbols:person-outline-rounded" />
 										</span>
 									{/if}
-									<div class="min-w-0">
-										<div class="font-bold text-white break-all">{forumUser.displayName || forumUser.username}</div>
+									<div class="min-w-0 flex-1 overflow-hidden">
+										<div class="truncate font-bold text-white" title={forumUser.displayName || forumUser.username}>{truncateDisplayName(forumUser.displayName || forumUser.username)}</div>
 									</div>
 								</div>
 
@@ -674,7 +681,7 @@
 					</div>
 
 					<div class="hidden overflow-x-auto md:block">
-						<table class="min-w-full text-left text-sm text-white/75">
+						<table class="min-w-full table-fixed text-left text-sm text-white/75">
 							<thead class="text-white/40">
 								<tr>
 									<th class="px-3 py-2">用户名</th>
@@ -734,8 +741,8 @@
 															<Icon icon="material-symbols:person-outline-rounded" />
 														</span>
 													{/if}
-													<div class="min-w-0">
-														<div class="font-bold text-white">{forumUser.displayName || forumUser.username}</div>
+													<div class="min-w-0 flex-1 overflow-hidden">
+														<div class="truncate font-bold text-white" title={forumUser.displayName || forumUser.username}>{truncateDisplayName(forumUser.displayName || forumUser.username)}</div>
 													</div>
 												</div>
 											</td>
