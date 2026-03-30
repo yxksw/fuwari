@@ -106,9 +106,6 @@
 				<h3>{displayName}</h3>
 			</div>
 			<div class="mx-auto mb-2 h-1 w-5 rounded-full bg-[var(--primary)] transition"></div>
-			{#if username}
-				<div class="mb-2 text-center text-sm text-white/45">@{username}</div>
-			{/if}
 			{#if bio}
 				<div class="mb-2.5 text-center text-neutral-400 transition">{bio}</div>
 			{/if}

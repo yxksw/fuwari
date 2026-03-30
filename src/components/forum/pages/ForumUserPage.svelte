@@ -137,7 +137,6 @@
 					{/if}
 					<div class="min-w-0 space-y-2">
 						<h1 class="text-2xl font-bold text-white break-words">{profile.displayName || profile.username}</h1>
-						<p class="text-sm text-white/45">@{profile.username}</p>
 						{#if profile.bio}
 							<p class="whitespace-pre-wrap text-sm text-white/70">{profile.bio}</p>
 						{/if}

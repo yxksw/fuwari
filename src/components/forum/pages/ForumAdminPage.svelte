@@ -268,10 +268,6 @@
 		return /[\u0000-\u001F\u007F-\u009F]/u.test(value);
 	}
 
-	function isValidAvatarUrl(value: string) {
-		return /^https?:\/\//i.test(value) || /^data:image\/svg\+xml/i.test(value);
-	}
-
 	function validateUserEditForm() {
 		const username = editingUserForm.username.trim();
 		const email = editingUserForm.email.trim();
@@ -295,12 +291,6 @@
 		}
 		if (email && !isValidEmail(email)) {
 			return "请输入有效的邮箱地址。";
-		}
-		if (avatarUrl.length > 500) {
-			return "Avatar URL too long (Max 500 chars)";
-		}
-		if (avatarUrl && !isValidAvatarUrl(avatarUrl)) {
-			return "Invalid Avatar URL";
 		}
 		if (password && (password.length < 8 || password.length > 16)) {
 			return "Password must be 8-16 characters";
@@ -630,7 +620,6 @@
 									{/if}
 									<div class="min-w-0">
 										<div class="font-bold text-white break-all">{forumUser.displayName || forumUser.username}</div>
-										<div class="text-xs text-white/35 break-all">@{forumUser.username}</div>
 									</div>
 								</div>
 
@@ -747,7 +736,6 @@
 													{/if}
 													<div class="min-w-0">
 														<div class="font-bold text-white">{forumUser.displayName || forumUser.username}</div>
-														<div class="text-xs text-white/35">@{forumUser.username}</div>
 													</div>
 												</div>
 											</td>
