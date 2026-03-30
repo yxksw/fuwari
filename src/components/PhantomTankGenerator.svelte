@@ -98,7 +98,7 @@
 			],
 		},
 		shadow: {
-			name: "暗影坦克",
+			name: "幻影坦克",
 			description: "已切换为你提供的 Mirage_Colored 核心逻辑：支持全彩输出、黑白双背景预览，以及亮度/去色/权重控制。",
 			sourceLabel: "白底图",
 			hiddenLabel: "黑底图",
@@ -277,7 +277,7 @@
 			const readyStatus =
 				mode === "prism"
 					? "图片已更新，可点击生成光棱坦克 PNG。"
-					: "图片已更新，可点击生成暗影坦克 PNG。";
+					: "图片已更新，可点击生成幻影坦克 PNG。";
 			const waitingStatus =
 				mode === "prism"
 					? "图片已加载，请继续上传另一张图片。"
@@ -317,7 +317,7 @@
 		shadowMaxSize = DEFAULT_SHADOWS.maxSize;
 		resetModeResult("shadow");
 		updateModeResult("shadow", {
-			statusMessage: "暗影坦克参数已重置为源码默认值，可重新生成图像。",
+			statusMessage: "幻影坦克参数已重置为源码默认值，可重新生成图像。",
 		});
 	}
 
@@ -392,7 +392,7 @@
 
 		const outputContext = outputCanvas.getContext("2d");
 		if (!innerContext || !coverContext || !outputContext) {
-			throw new Error("浏览器不支持暗影坦克所需的 Canvas 能力。");
+			throw new Error("浏览器不支持幻影坦克所需的 Canvas 能力。");
 		}
 
 		outputCanvas.width = width;
@@ -841,11 +841,11 @@
 							<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 								<div class="rounded-2xl border border-white/10 bg-white p-3">
 									<p class="mb-3 text-sm font-medium text-black/75">白底预览</p>
-									<img src={currentResult.url} alt="暗影坦克白底预览" class="w-full rounded-lg border border-black/10 bg-white object-contain" />
+									<img src={currentResult.url} alt="幻影坦克白底预览" class="w-full rounded-lg border border-black/10 bg-white object-contain" />
 								</div>
 								<div class="rounded-2xl border border-white/10 bg-black p-3">
 									<p class="mb-3 text-sm font-medium text-white/80">黑底预览</p>
-									<img src={currentResult.url} alt="暗影坦克黑底预览" class="w-full rounded-lg border border-white/10 bg-black object-contain" />
+									<img src={currentResult.url} alt="幻影坦克黑底预览" class="w-full rounded-lg border border-white/10 bg-black object-contain" />
 								</div>
 							</div>
 						{/if}
