@@ -126,20 +126,30 @@ async function startTest() {
 
 		// 如果没有通过WebSocket收到结果，自己分析
 		if (!result && iceCandidates.length > 0) {
-			const ports = iceCandidates.map((c) => {
+			const portInfo = iceCandidates.map((c) => {
 				const parts = c.split(" ");
-				return Number.parseInt(parts[5]);
+				const ip = parts[4];
+				const port = Number.parseInt(parts[5]);
+				const isIPv6 = ip.includes(":");
+				return { ip, port, isIPv6 };
 			});
 
-			const uniquePorts = new Set(ports);
-			const publicIp = iceCandidates[0].split(" ")[4];
+			console.log("[NAT] 所有端口:", portInfo);
+
+			// 只使用IPv4的候选者判断NAT类型
+			const ipv4Candidates = portInfo.filter((p) => !p.isIPv6);
+			const uniquePorts = new Set(ipv4Candidates.map((p) => p.port));
+			const publicIp = ipv4Candidates[0]?.ip || portInfo[0].ip;
+
+			console.log("[NAT] IPv4端口:", ipv4Candidates);
+			console.log("[NAT] 不同端口数:", uniquePorts.size);
 
 			let natType: string;
-			if (uniquePorts.size === 1) {
-				// 同一连接多个STUN返回相同端口 = Full Cone
+			if (ipv4Candidates.length === 0) {
+				natType = "Blocked";
+			} else if (uniquePorts.size === 1) {
 				natType = "Full Cone";
 			} else {
-				// 端口不同 = Symmetric
 				natType = "Symmetric";
 			}
 

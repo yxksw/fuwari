@@ -119,20 +119,26 @@ function analyzeAndSendResult(client) {
 		return;
 	}
 
-	const publicIp = srflxCandidates[0].ip;
-	const uniquePorts = new Set(srflxCandidates.map((c) => c.port));
+	// 只使用IPv4候选者
+	const ipv4Candidates = srflxCandidates.filter((c) => !c.ip.includes(":"));
+
+	if (ipv4Candidates.length === 0) {
+		client.ws.send(JSON.stringify({ nat_type: "Blocked", public_ip: "未知" }));
+		return;
+	}
+
+	const publicIp = ipv4Candidates[0].ip;
+	const uniquePorts = new Set(ipv4Candidates.map((c) => c.port));
 
 	console.log("[NAT] 公网IP: " + publicIp);
-	console.log("[NAT] 端口数量: " + uniquePorts.size);
-	console.log("[NAT] 端口列表: " + Array.from(uniquePorts).join(", "));
+	console.log("[NAT] IPv4端口数量: " + uniquePorts.size);
+	console.log("[NAT] IPv4端口列表: " + Array.from(uniquePorts).join(", "));
 
 	let natType;
 
 	if (uniquePorts.size === 1) {
-		// 同一连接返回相同端口 = Full Cone
 		natType = "Full Cone";
 	} else {
-		// 端口不同 = Symmetric
 		natType = "Symmetric";
 	}
 
