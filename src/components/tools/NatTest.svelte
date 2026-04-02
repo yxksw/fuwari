@@ -5,6 +5,7 @@ let testing = false;
 let result: { natType: string; publicIp: string } | null = null;
 let error = "";
 let iceCandidates: string[] = [];
+let probePc: RTCPeerConnection | null = null;
 
 const ICE_CONFIG: RTCConfiguration = {
 	iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -67,6 +68,15 @@ async function startTest() {
 					candidate: data["ice-candidate"],
 					sdpMLineIndex: 0,
 				});
+			} else if (data["probe-offer"] && ws) {
+				// 收到探测offer，创建第二个PeerConnection响应
+				handleProbe(data["probe-offer"], ws);
+			} else if (data["probe-candidate"] && probePc) {
+				// 收到探测ICE候选者
+				probePc.addIceCandidate({
+					candidate: data["probe-candidate"],
+					sdpMLineIndex: 0,
+				});
 			} else if (data.nat_type) {
 				result = {
 					natType: normalizeNatType(data.nat_type),
@@ -83,6 +93,7 @@ async function startTest() {
 		ws.onclose = () => {
 			testing = false;
 			pc?.close();
+			probePc?.close();
 		};
 
 		setTimeout(() => {
@@ -99,6 +110,44 @@ async function startTest() {
 	}
 }
 
+async function handleProbe(offerSdp: string, ws: WebSocket) {
+	console.log("[NAT] 收到探测offer，创建第二个PeerConnection");
+
+	try {
+		probePc = new RTCPeerConnection({
+			iceServers: [{ urls: "stun:stun1.l.google.com:19302" }],
+		});
+
+		probePc.onicecandidate = (event) => {
+			if (event.candidate) {
+				console.log("[NAT] Probe ICE candidate:", event.candidate.candidate);
+				ws.send(
+					JSON.stringify({ "probe-candidate": event.candidate.candidate }),
+				);
+			}
+		};
+
+		await probePc.setRemoteDescription({ type: "offer", sdp: offerSdp });
+		const answer = await probePc.createAnswer();
+		await probePc.setLocalDescription(answer);
+
+		ws.send(JSON.stringify({ "probe-answer": answer.sdp }));
+
+		// 监听DataChannel
+		probePc.ondatachannel = (event) => {
+			const dc = event.channel;
+			dc.onopen = () => {
+				console.log("[NAT] 探测DataChannel已打开");
+			};
+			dc.onmessage = (msg) => {
+				console.log("[NAT] 探测收到消息:", msg.data);
+			};
+		};
+	} catch (err) {
+		console.error("[NAT] 处理探测offer失败:", err);
+	}
+}
+
 function normalizeNatType(natType: string): string {
 	if (natType.includes("Symmetric")) {
 		return "Symmetric";
@@ -106,11 +155,11 @@ function normalizeNatType(natType: string): string {
 	if (natType.includes("Full Cone")) {
 		return "Full Cone";
 	}
-	if (natType.includes("Restricted Cone")) {
-		return "Restricted Cone";
-	}
 	if (natType.includes("Port Restricted")) {
 		return "Port Restricted Cone";
+	}
+	if (natType.includes("Restricted")) {
+		return "Restricted Cone";
 	}
 	return natType;
 }
@@ -174,17 +223,6 @@ function getNatDescription(natType: string): string {
 			<div class="border-t border-white/10 pt-4 text-center">
 				<p class="text-sm text-50 mb-1">公网IP</p>
 				<p class="text-xl font-mono text-75">{result.publicIp}</p>
-			</div>
-		</div>
-	{/if}
-
-	{#if iceCandidates.length > 0 && !result}
-		<div class="rounded-xl border border-white/10 p-4">
-			<p class="text-sm text-50 mb-2">已收集到 {iceCandidates.length} 个ICE候选者</p>
-			<div class="space-y-1 max-h-32 overflow-y-auto">
-				{#each iceCandidates as candidate}
-					<p class="text-xs text-40 font-mono truncate">{candidate}</p>
-				{/each}
 			</div>
 		</div>
 	{/if}
