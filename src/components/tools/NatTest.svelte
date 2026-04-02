@@ -2,134 +2,26 @@
 import Icon from "@iconify/svelte";
 
 let testing = false;
-let result: { natType: string; publicIp: string; phase?: number } | null = null;
+let result: { natType: string; publicIp: string } | null = null;
 let error = "";
 let iceCandidates: string[] = [];
-let testPhase = 0;
 
 const ICE_CONFIG: RTCConfiguration = {
 	iceServers: [
 		{ urls: "stun:stun.l.google.com:19302" },
 		{ urls: "stun:stun1.l.google.com:19302" },
+		{ urls: "stun:stun2.l.google.com:19302" },
+		{ urls: "stun:stun3.l.google.com:19302" },
+		{ urls: "stun:stun4.l.google.com:19302" },
+		{ urls: "stun:stun.cloudflare.com:3478" },
 	],
 };
 
-const PRIMARY_SERVER = "ws://87.83.110.226:8080";
-const SECONDARY_SERVER = "ws://87.83.110.226:8081";
+const SIGNALING_SERVER = "ws://87.83.110.226:8080";
 
 function isUdpSrflxCandidate(candidate: string): boolean {
 	const c = candidate.toLowerCase();
 	return c.includes(" udp ") && c.includes(" srflx ");
-}
-
-function runSingleTest(
-	serverUrl: string,
-	phase: number,
-): Promise<{ ip: string; port: number; candidates: string[] }> {
-	return new Promise((resolve, reject) => {
-		let pc: RTCPeerConnection | null = null;
-		let ws: WebSocket | null = null;
-		const candidates: string[] = [];
-		let resolved = false;
-
-		const timeout = setTimeout(() => {
-			if (!resolved) {
-				resolved = true;
-				pc?.close();
-				ws?.close();
-				reject(new Error("测试超时"));
-			}
-		}, 10000);
-
-		try {
-			pc = new RTCPeerConnection(ICE_CONFIG);
-			pc.createDataChannel("nat-test");
-
-			pc.onicecandidate = (event) => {
-				if (event.candidate) {
-					const candidateStr = event.candidate.candidate;
-					console.log("[NAT] Phase " + phase + " ICE candidate:", candidateStr);
-
-					if (isUdpSrflxCandidate(candidateStr)) {
-						candidates.push(candidateStr);
-
-						if (ws && ws.readyState === WebSocket.OPEN) {
-							ws.send(JSON.stringify({ "ice-candidate": candidateStr }));
-						}
-					}
-				}
-			};
-
-			ws = new WebSocket(serverUrl);
-
-			ws.onopen = () => {
-				console.log("[NAT] Phase " + phase + " connected to " + serverUrl);
-
-				// 发送测试阶段
-				ws?.send(JSON.stringify({ type: "test-phase", phase }));
-
-				pc?.createOffer().then((offer) => {
-					ws?.send(
-						JSON.stringify({
-							"user-agent": navigator.userAgent,
-							sdp: offer.sdp,
-						}),
-					);
-					pc?.setLocalDescription(offer);
-				});
-			};
-
-			ws.onmessage = (event) => {
-				const data = JSON.parse(event.data);
-				console.log("[NAT] Phase " + phase + " received:", data);
-
-				if (data.sdp && pc) {
-					pc.setRemoteDescription({ type: "answer", sdp: data.sdp });
-				} else if (data["ice-candidate"] && pc) {
-					pc.addIceCandidate({
-						candidate: data["ice-candidate"],
-						sdpMLineIndex: 0,
-					});
-				} else if (data.nat_type && !resolved) {
-					resolved = true;
-					clearTimeout(timeout);
-
-					const firstCandidate = candidates[0];
-					const ip = data.public_ip || "未知";
-					const port = firstCandidate
-						? Number.parseInt(firstCandidate.split(" ")[5])
-						: 0;
-
-					pc.close();
-					ws.close();
-
-					resolve({ ip, port, candidates });
-				} else if (data.error && !resolved) {
-					resolved = true;
-					clearTimeout(timeout);
-					pc?.close();
-					ws?.close();
-					reject(new Error(data.error));
-				}
-			};
-
-			ws.onerror = () => {
-				if (!resolved) {
-					resolved = true;
-					clearTimeout(timeout);
-					pc?.close();
-					reject(new Error("连接失败"));
-				}
-			};
-		} catch (err) {
-			if (!resolved) {
-				resolved = true;
-				clearTimeout(timeout);
-				pc?.close();
-				reject(err);
-			}
-		}
-	});
 }
 
 async function startTest() {
@@ -137,49 +29,135 @@ async function startTest() {
 	result = null;
 	error = "";
 	iceCandidates = [];
-	testPhase = 1;
+
+	let pc: RTCPeerConnection | null = null;
+	let ws: WebSocket | null = null;
+	let candidateResolve: (() => void) | null = null;
 
 	try {
-		// 第一次测试
-		console.log("[NAT] 开始第一次测试...");
-		const test1 = await runSingleTest(PRIMARY_SERVER, 1);
-		iceCandidates = test1.candidates;
+		pc = new RTCPeerConnection(ICE_CONFIG);
+		pc.createDataChannel("nat-test");
 
-		console.log("[NAT] 第一次测试结果:", test1);
+		// 等待收集足够候选者
+		const candidatePromise = new Promise<void>((resolve) => {
+			candidateResolve = resolve;
+		});
 
-		// 第二次测试（从不同端口）
-		testPhase = 2;
-		console.log("[NAT] 开始第二次测试...");
-		const test2 = await runSingleTest(SECONDARY_SERVER, 2);
+		pc.onicecandidate = (event) => {
+			if (event.candidate) {
+				const candidateStr = event.candidate.candidate;
+				console.log("[NAT] ICE candidate:", candidateStr);
 
-		console.log("[NAT] 第二次测试结果:", test2);
+				if (isUdpSrflxCandidate(candidateStr)) {
+					iceCandidates = [...iceCandidates, candidateStr];
 
-		// 对比结果判断NAT类型
-		let natType: string;
+					if (ws && ws.readyState === WebSocket.OPEN) {
+						ws.send(JSON.stringify({ "ice-candidate": candidateStr }));
+					}
 
-		if (test1.port === 0 || test2.port === 0) {
-			natType = "Blocked";
-		} else if (test1.port !== test2.port) {
-			// 两次测试端口不同 = 对称NAT
-			natType = "Symmetric";
-		} else {
-			// 端口相同，能从不同端口的服务器连接成功 = Full Cone
-			natType = "Full Cone";
-		}
-
-		result = {
-			natType,
-			publicIp: test1.ip,
-			phase: 2,
+					// 收集到足够候选者后结束
+					if (iceCandidates.length >= 3 && candidateResolve) {
+						candidateResolve();
+						candidateResolve = null;
+					}
+				}
+			} else {
+				// ICE收集完成
+				if (candidateResolve) {
+					candidateResolve();
+					candidateResolve = null;
+				}
+			}
 		};
 
-		console.log("[NAT] 最终结果:", result);
+		ws = new WebSocket(SIGNALING_SERVER);
+
+		ws.onopen = () => {
+			console.log("[NAT] Connected to signaling server");
+
+			pc?.createOffer().then((offer) => {
+				ws?.send(
+					JSON.stringify({
+						"user-agent": navigator.userAgent,
+						sdp: offer.sdp,
+					}),
+				);
+				pc?.setLocalDescription(offer);
+			});
+		};
+
+		ws.onmessage = (event) => {
+			const data = JSON.parse(event.data);
+			console.log("[NAT] Received:", data);
+
+			if (data.sdp && pc) {
+				pc.setRemoteDescription({ type: "answer", sdp: data.sdp });
+			} else if (data["ice-candidate"] && pc) {
+				pc.addIceCandidate({
+					candidate: data["ice-candidate"],
+					sdpMLineIndex: 0,
+				});
+			} else if (data.nat_type) {
+				result = {
+					natType: data.nat_type,
+					publicIp: data.public_ip || "未知",
+				};
+				ws?.close();
+			} else if (data.error) {
+				error = data.error;
+				ws?.close();
+			}
+		};
+
+		ws.onerror = () => {
+			error = "信令服务器连接失败";
+		};
+
+		ws.onclose = () => {
+			testing = false;
+			pc?.close();
+		};
+
+		// 等待候选者收集或超时
+		await Promise.race([
+			candidatePromise,
+			new Promise((resolve) => setTimeout(resolve, 8000)),
+		]);
+
+		// 如果没有通过WebSocket收到结果，自己分析
+		if (!result && iceCandidates.length > 0) {
+			const ports = iceCandidates.map((c) => {
+				const parts = c.split(" ");
+				return Number.parseInt(parts[5]);
+			});
+
+			const uniquePorts = new Set(ports);
+			const publicIp = iceCandidates[0].split(" ")[4];
+
+			let natType: string;
+			if (uniquePorts.size === 1) {
+				// 同一连接多个STUN返回相同端口 = Full Cone
+				natType = "Full Cone";
+			} else {
+				// 端口不同 = Symmetric
+				natType = "Symmetric";
+			}
+
+			result = { natType, publicIp };
+		}
+
+		// 超时处理
+		setTimeout(() => {
+			if (testing && !result && !error) {
+				error = "测试超时";
+				ws?.close();
+				pc?.close();
+			}
+		}, 15000);
 	} catch (err) {
-		console.error("[NAT] Error:", err);
 		error = err instanceof Error ? err.message : "测试失败";
-	} finally {
 		testing = false;
-		testPhase = 0;
+		pc?.close();
 	}
 }
 
@@ -203,7 +181,7 @@ function getNatDescription(natType: string): string {
 	</div>
 
 	<p class="text-sm text-50 leading-relaxed">
-		检测您的网络NAT类型和公网IP地址，帮助判断P2P连接兼容性。测试需要约15-20秒。
+		检测您的网络NAT类型和公网IP地址，帮助判断P2P连接兼容性。测试需要约10-15秒。
 	</p>
 
 	<div class="flex justify-center">
@@ -215,7 +193,7 @@ function getNatDescription(natType: string): string {
 			{#if testing}
 				<span class="flex items-center gap-2">
 					<Icon icon="svg-spinners:ring-resize" class="text-lg" />
-					正在测试... (阶段 {testPhase}/2)
+					正在测试...
 				</span>
 			{:else}
 				开始检测
