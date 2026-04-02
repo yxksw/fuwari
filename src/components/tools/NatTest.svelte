@@ -155,6 +155,9 @@ function normalizeNatType(natType: string): string {
 	if (natType.includes("Full Cone")) {
 		return "Full Cone";
 	}
+	if (natType.includes("Cone NAT")) {
+		return "Cone NAT";
+	}
 	if (natType.includes("Port Restricted")) {
 		return "Port Restricted Cone";
 	}
@@ -166,6 +169,7 @@ function normalizeNatType(natType: string): string {
 
 const natTypeDescriptions: Record<string, string> = {
 	"Full Cone": "完全锥形NAT - 最适合P2P连接",
+	"Cone NAT": "锥形NAT - 包括Full/Restricted/Port Restricted，P2P通常可用",
 	"Restricted Cone": "受限锥形NAT - 较好的P2P兼容性",
 	"Port Restricted Cone": "端口受限锥形NAT - 中等P2P兼容性",
 	Symmetric: "对称型NAT - P2P连接困难",
