@@ -1,10 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -13,15 +14,27 @@ import (
 	"github.com/pion/webrtc/v3"
 )
 
+const (
+	cloudflareTurnTokenID = "e0da3fd567df706c40b5d51b2232ecb4"
+	cloudflareAPIToken    = "f8aa0e5636dafac481a425a8a31f44aedabc5f058af2884b34c9b63b8f712c38"
+)
+
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
+// 全局缓存ICE服务器配置
+var (
+	cachedICEServers []webrtc.ICEServer
+	cacheMu          sync.Mutex
+	cacheTime        time.Time
+)
+
 type Msg struct {
-	SDP           string `json:"sdp,omitempty"`
-	ICECandidate  string `json:"ice-candidate,omitempty"`
-	ProbeSDP      string `json:"probe-sdp,omitempty"`
-	ProbeAnswer   string `json:"probe-answer,omitempty"`
+	SDP            string `json:"sdp,omitempty"`
+	ICECandidate   string `json:"ice-candidate,omitempty"`
+	ProbeSDP       string `json:"probe-sdp,omitempty"`
+	ProbeAnswer    string `json:"probe-answer,omitempty"`
 	ProbeCandidate string `json:"probe-candidate,omitempty"`
 }
 
@@ -36,49 +49,80 @@ type Session struct {
 }
 
 func getICEServers() []webrtc.ICEServer {
-	// 从环境变量获取TURN配置
-	turnURL := os.Getenv("TURN_URL")
-	turnUser := os.Getenv("TURN_USERNAME")
-	turnCred := os.Getenv("TURN_CREDENTIAL")
+	cacheMu.Lock()
+	defer cacheMu.Unlock()
 
-	servers := []webrtc.ICEServer{
-		{URLs: []string{"stun:stun.l.google.com:19302"}},
+	// 缓存1小时
+	if cachedICEServers != nil && time.Since(cacheTime) < time.Hour {
+		return cachedICEServers
 	}
 
-	if turnURL != "" {
+	// 调用Cloudflare API获取凭证
+	url := "https://rtc.live.cloudflare.com/v1/turn/keys/" + cloudflareTurnTokenID + "/credentials/generate-ice-servers"
+	
+	reqBody := map[string]int{"ttl": 86400}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		log.Println("创建请求失败:", err)
+		return getDefaultICEServers()
+	}
+
+	req.Header.Set("Authorization", "Bearer "+cloudflareAPIToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("请求Cloudflare API失败:", err)
+		return getDefaultICEServers()
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	log.Println("Cloudflare API响应:", string(body))
+
+	var result struct {
+		ICeServers []struct {
+			URLs       []string `json:"urls"`
+			Username   string   `json:"username"`
+			Credential string   `json:"credential"`
+		} `json:"iceServers"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		log.Println("解析响应失败:", err)
+		return getDefaultICEServers()
+	}
+
+	var servers []webrtc.ICEServer
+	for _, s := range result.ICeServers {
 		servers = append(servers, webrtc.ICEServer{
-			URLs:       []string{turnURL},
-			Username:   turnUser,
-			Credential: turnCred,
+			URLs:       s.URLs,
+			Username:   s.Username,
+			Credential: s.Credential,
 		})
 	}
 
+	cachedICEServers = servers
+	cacheTime = time.Now()
+
+	log.Println("获取到ICE服务器配置:", len(servers))
 	return servers
 }
 
-func getProbeICEServers() []webrtc.ICEServer {
-	// 探测用的TURN服务器，使用不同的配置
-	turnURL := os.Getenv("TURN_URL_2")
-	turnUser := os.Getenv("TURN_USERNAME_2")
-	turnCred := os.Getenv("TURN_CREDENTIAL_2")
-
-	// 如果没有配置第二个TURN，使用同一个但不同STUN
-	if turnURL == "" {
-		return []webrtc.ICEServer{
-			{URLs: []string{"stun:stun1.l.google.com:19302"}},
-		}
-	}
-
+func getDefaultICEServers() []webrtc.ICEServer {
 	return []webrtc.ICEServer{
-		{
-			URLs:       []string{turnURL},
-			Username:   turnUser,
-			Credential: turnCred,
-		},
+		{URLs: []string{"stun:stun.cloudflare.com:3478"}},
+		{URLs: []string{"stun:stun.l.google.com:19302"}},
 	}
 }
 
 func main() {
+	// 预热缓存
+	go getICEServers()
+
 	http.HandleFunc("/ws", wsHandler)
 	log.Println("NAT检测服务器启动在 :9000")
 	http.ListenAndServe(":9000", nil)
@@ -97,9 +141,11 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		ports: make(map[string]bool),
 	}
 
+	iceServers := getICEServers()
+
 	// 创建pcA（主连接）
 	pcA, err := webrtc.NewPeerConnection(webrtc.Configuration{
-		ICEServers: getICEServers(),
+		ICEServers: iceServers,
 	})
 	if err != nil {
 		log.Println("创建pcA失败:", err)
@@ -108,9 +154,9 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	session.pcA = pcA
 	defer pcA.Close()
 
-	// 创建pcB（探测连接）
+	// 创建pcB（探测连接，使用不同ICE服务器）
 	pcB, err := webrtc.NewPeerConnection(webrtc.Configuration{
-		ICEServers: getProbeICEServers(),
+		ICEServers: iceServers,
 	})
 	if err != nil {
 		log.Println("创建pcB失败:", err)
@@ -245,20 +291,16 @@ func (s *Session) startProbe() {
 
 	log.Println("开始Full Cone探测...")
 
-	// 创建探测DataChannel
 	dcB, _ := s.pcB.CreateDataChannel("probe", nil)
 	dcB.OnOpen(func() {
 		log.Println("pcB DataChannel打开")
 	})
 
-	// 创建offer
 	offer, _ := s.pcB.CreateOffer(nil)
 	s.pcB.SetLocalDescription(offer)
 
-	// 发送给客户端
 	s.ws.WriteJSON(map[string]string{"probe-offer": offer.SDP})
 
-	// 等待连接
 	time.Sleep(4 * time.Second)
 
 	s.mu.Lock()
