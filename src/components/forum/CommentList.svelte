@@ -22,6 +22,28 @@ export let commentSort = "hot";
 export let commentSortOptions: Array<{ value: string; label: string }> = [];
 export let onSortChange: (value: string) => void = () => {};
 
+	function compareCommentsByCreatedAtAsc(a: ForumComment, b: ForumComment) {
+		const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+		const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+		const createdAtDiff = aTime - bTime;
+		if (createdAtDiff !== 0) {
+			return createdAtDiff;
+		}
+
+		return a.id.localeCompare(b.id);
+	}
+
+	function sortRepliesByCreatedAt(comment: ForumComment) {
+		if (!comment.replies?.length) {
+			return;
+		}
+
+		comment.replies = [...comment.replies].sort(compareCommentsByCreatedAtAsc);
+		for (const reply of comment.replies) {
+			sortRepliesByCreatedAt(reply);
+		}
+	}
+
 	function buildCommentTree(flatComments: ForumComment[]) {
 		const map = new Map<string, ForumComment>();
 		const roots: ForumComment[] = [];
@@ -39,6 +61,10 @@ export let onSortChange: (value: string) => void = () => {};
 				}
 			}
 			roots.push(comment);
+		}
+
+		for (const root of roots) {
+			sortRepliesByCreatedAt(root);
 		}
 
 		return roots;
