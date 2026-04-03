@@ -1,35 +1,35 @@
 <script lang="ts">
-	import { get } from "svelte/store";
-	import Icon from "@iconify/svelte";
-	import { FORUM_API_BASE_URLS, forumEnv } from "@/forum/stores/env";
+import { FORUM_API_BASE_URLS, forumEnv } from "@/forum/stores/env";
+import Icon from "@iconify/svelte";
+import { get } from "svelte/store";
 
-	let currentEnv = get(forumEnv);
-	let customBaseUrl = FORUM_API_BASE_URLS[currentEnv];
-	let currentBaseUrl = customBaseUrl;
+let currentEnv = get(forumEnv);
+let customBaseUrl = FORUM_API_BASE_URLS[currentEnv];
+let currentBaseUrl = customBaseUrl;
 
-	forumEnv.subscribe((value) => {
-		currentEnv = value;
-	});
+forumEnv.subscribe((value) => {
+	currentEnv = value;
+});
 
-	forumEnv.customBaseUrl.subscribe((value) => {
-		customBaseUrl = value;
-	});
+forumEnv.customBaseUrl.subscribe((value) => {
+	customBaseUrl = value;
+});
 
-	forumEnv.baseUrl.subscribe((value) => {
-		currentBaseUrl = value;
-	});
+forumEnv.baseUrl.subscribe((value) => {
+	currentBaseUrl = value;
+});
 
-	function toggleEnv() {
-		forumEnv.toggle();
-	}
+function toggleEnv() {
+	forumEnv.toggle();
+}
 
-	function applyCustomBaseUrl() {
-		forumEnv.customBaseUrl.set(customBaseUrl);
-	}
+function applyCustomBaseUrl() {
+	forumEnv.customBaseUrl.set(customBaseUrl);
+}
 
-	function resetBaseUrl() {
-		forumEnv.customBaseUrl.reset(currentEnv);
-	}
+function resetBaseUrl() {
+	forumEnv.customBaseUrl.reset(currentEnv);
+}
 </script>
 
 <details class="rounded-xl border border-white/10 bg-white/5 text-sm text-white/70 group">

@@ -127,7 +127,11 @@ function normalizeRole(user?: RawUserRecord | null) {
 	}
 	if (typeof rawRole === "string") {
 		const normalized = rawRole.trim().toLowerCase();
-		if (["admin", "administrator", "root", "superadmin", "super_admin"].includes(normalized)) {
+		if (
+			["admin", "administrator", "root", "superadmin", "super_admin"].includes(
+				normalized,
+			)
+		) {
 			return "admin";
 		}
 		return normalized;
@@ -142,7 +146,8 @@ function normalizeUser(user?: RawUserRecord | null): ForumUser | null {
 	return {
 		id: String(user.id),
 		username: user.username || "用户",
-		displayName: user.display_name || user.displayName || user.username || "用户",
+		displayName:
+			user.display_name || user.displayName || user.username || "用户",
 		avatarUrl: user.avatar_url || user.avatarUrl || undefined,
 		bio: user.bio?.trim() || undefined,
 		gender: normalizeGender(user.gender),
@@ -150,7 +155,9 @@ function normalizeUser(user?: RawUserRecord | null): ForumUser | null {
 		region: user.region?.trim() || undefined,
 		role: normalizeRole(user),
 		createdAt: user.created_at || user.createdAt,
-		verified: toOptionalBoolean(user.verified ?? user.email_verified ?? user.emailVerified),
+		verified: toOptionalBoolean(
+			user.verified ?? user.email_verified ?? user.emailVerified,
+		),
 	};
 }
 
@@ -165,7 +172,9 @@ function normalizeUserPostsQuery(query: ForumPostListQuery) {
 	const page = Math.max(1, query.page || 1);
 	const limit = query.pageSize;
 	const offset = limit ? (page - 1) * limit : undefined;
-	const sort = query.sort ? (sortMap[query.sort] || { sort_by: query.sort, sort_dir: "desc" }) : undefined;
+	const sort = query.sort
+		? sortMap[query.sort] || { sort_by: query.sort, sort_dir: "desc" }
+		: undefined;
 
 	return {
 		limit,
@@ -176,7 +185,9 @@ function normalizeUserPostsQuery(query: ForumPostListQuery) {
 }
 
 function normalizeUserPost(post: RawUserPostRecord): ForumPostSummary {
-	const coverImageUrl = extractFirstImageUrlFromMarkdown(post.content) || extractFirstImageUrlFromMarkdown(post.excerpt);
+	const coverImageUrl =
+		extractFirstImageUrlFromMarkdown(post.content) ||
+		extractFirstImageUrlFromMarkdown(post.excerpt);
 
 	return {
 		id: String(post.id),
@@ -186,17 +197,24 @@ function normalizeUserPost(post: RawUserPostRecord): ForumPostSummary {
 		excerpt: post.excerpt,
 		content: post.content,
 		coverImageUrl,
-		categoryId: post.category_id !== undefined ? String(post.category_id) : undefined,
-		category: post.category || (post.category_name ? { id: String(post.category_id || ""), name: post.category_name } : null),
-		author: post.author || (post.author_name || post.author_avatar
-			? {
-				id: post.author_id !== undefined ? String(post.author_id) : "",
-				username: post.author_name || "匿名",
-				displayName: post.author_name || "匿名",
-				avatarUrl: post.author_avatar || undefined,
-				role: post.author_role,
-			}
-			: null),
+		categoryId:
+			post.category_id !== undefined ? String(post.category_id) : undefined,
+		category:
+			post.category ||
+			(post.category_name
+				? { id: String(post.category_id || ""), name: post.category_name }
+				: null),
+		author:
+			post.author ||
+			(post.author_name || post.author_avatar
+				? {
+						id: post.author_id !== undefined ? String(post.author_id) : "",
+						username: post.author_name || "匿名",
+						displayName: post.author_name || "匿名",
+						avatarUrl: post.author_avatar || undefined,
+						role: post.author_role,
+					}
+				: null),
 		viewCount: post.view_count,
 		commentCount: post.comment_count,
 		likeCount: post.like_count,
@@ -224,7 +242,9 @@ function resolveProfileUser(result: RawUserRecord | RawUserProfileResult) {
 }
 
 export async function getUserProfile(userId: string) {
-	const result = await forumRequest<RawUserRecord | RawUserProfileResult>(`/api/users/${userId}`);
+	const result = await forumRequest<RawUserRecord | RawUserProfileResult>(
+		`/api/users/${userId}`,
+	);
 	const user = normalizeUser(resolveProfileUser(result));
 	if (!user) {
 		throw new ForumApiError(404, { message: "用户不存在" });
@@ -232,9 +252,14 @@ export async function getUserProfile(userId: string) {
 	return user;
 }
 
-export async function getUserPosts(userId: string, query: ForumPostListQuery = {}): Promise<ApiListResult<ForumPostSummary>> {
+export async function getUserPosts(
+	userId: string,
+	query: ForumPostListQuery = {},
+): Promise<ApiListResult<ForumPostSummary>> {
 	const normalizedQuery = normalizeUserPostsQuery(query);
-	const result = await forumRequest<RawUserPostListResult | RawUserPostRecord[]>(`/api/users/${userId}/posts`, {
+	const result = await forumRequest<
+		RawUserPostListResult | RawUserPostRecord[]
+	>(`/api/users/${userId}/posts`, {
 		query: normalizedQuery,
 	});
 

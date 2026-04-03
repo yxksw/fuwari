@@ -1,198 +1,219 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { get } from "svelte/store";
-	import Icon from "@iconify/svelte";
-	import { getSession } from "@/forum/api/auth";
-	import { createPost, getPost, updatePost } from "@/forum/api/posts";
-	import { ForumApiError } from "@/forum/types/api";
-	import type { ForumPostDetail, ForumPostInput } from "@/forum/types/post";
-	import ForumMarkdownEditor from "@/components/forum/ForumMarkdownEditor.svelte";
-	import { forumAuth } from "@/forum/stores/auth";
+import ForumMarkdownEditor from "@/components/forum/ForumMarkdownEditor.svelte";
+import { getSession } from "@/forum/api/auth";
+import { createPost, getPost, updatePost } from "@/forum/api/posts";
+import { forumAuth } from "@/forum/stores/auth";
+import { ForumApiError } from "@/forum/types/api";
+import type { ForumPostDetail, ForumPostInput } from "@/forum/types/post";
+import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
+import { get } from "svelte/store";
 
-	export let mode: "create" | "edit" = "create";
-	export let postId = "";
-	export let initialTitle = "";
-	export let initialContent = "";
-	export let initialCategoryId = "";
+export let mode: "create" | "edit" = "create";
+export let postId = "";
+export let initialTitle = "";
+export let initialContent = "";
+export let initialCategoryId = "";
 
-	let title = initialTitle;
-	let content = initialContent;
-	let categoryId = initialCategoryId;
-	let status = "";
-	let submitting = false;
-	let loadingPost = mode === "edit";
-	let canSubmit = mode === "create";
-	let isLoggedIn = false;
-	let currentUserId = "";
-	let isAdmin = false;
-	let permissionChecked = mode !== "edit";
+let title = initialTitle;
+let content = initialContent;
+let categoryId = initialCategoryId;
+let status = "";
+let submitting = false;
+let loadingPost = mode === "edit";
+let canSubmit = mode === "create";
+let isLoggedIn = false;
+let currentUserId = "";
+let isAdmin = false;
+let permissionChecked = mode !== "edit";
 
-	const pageTitle = mode === "edit" ? "编辑帖子" : "发布帖子";
-	const submitLabel = mode === "edit" ? "保存" : "发布";
-	const submittingLabel = mode === "edit" ? "正在保存..." : "正在发布...";
-	const editorSubmitHint = mode === "edit" ? "Ctrl/Cmd + Enter 保存" : "Ctrl/Cmd + Enter 发布";
+const pageTitle = mode === "edit" ? "编辑帖子" : "发布帖子";
+const submitLabel = mode === "edit" ? "保存" : "发布";
+const submittingLabel = mode === "edit" ? "正在保存..." : "正在发布...";
+const editorSubmitHint =
+	mode === "edit" ? "Ctrl/Cmd + Enter 保存" : "Ctrl/Cmd + Enter 发布";
 
-	$: cancelHref = mode === "edit" && postId ? `/forum/post/?id=${encodeURIComponent(postId)}` : "/forum/";
+$: cancelHref =
+	mode === "edit" && postId
+		? `/forum/post/?id=${encodeURIComponent(postId)}`
+		: "/forum/";
 
-	function resolvePostId() {
-		if (postId) {
-			return postId;
-		}
-		if (typeof window === "undefined") {
-			return "";
-		}
-		return new URLSearchParams(window.location.search).get("id") || "";
+function resolvePostId() {
+	if (postId) {
+		return postId;
+	}
+	if (typeof window === "undefined") {
+		return "";
+	}
+	return new URLSearchParams(window.location.search).get("id") || "";
+}
+
+function applyPost(post: ForumPostDetail) {
+	title = post.title || "";
+	content = post.content || post.excerpt || "";
+	categoryId = post.categoryId || "";
+}
+
+function updatePermission(post: ForumPostDetail | null) {
+	permissionChecked = true;
+	if (mode !== "edit") {
+		canSubmit = true;
+		return;
+	}
+	if (!isLoggedIn) {
+		canSubmit = false;
+		return;
+	}
+	if (!post) {
+		canSubmit = false;
+		return;
+	}
+	canSubmit =
+		isAdmin ||
+		Boolean(post.authorId && currentUserId && post.authorId === currentUserId);
+}
+
+async function ensureSession() {
+	const authState = get(forumAuth);
+	isLoggedIn = Boolean(authState.token || forumAuth.getToken());
+	currentUserId = authState.user?.id || "";
+	isAdmin = authState.user?.role === "admin";
+
+	if (!isLoggedIn) {
+		return;
+	}
+	if (authState.user) {
+		return;
 	}
 
-	function applyPost(post: ForumPostDetail) {
-		title = post.title || "";
-		content = post.content || post.excerpt || "";
-		categoryId = post.categoryId || "";
+	try {
+		const session = await getSession();
+		forumAuth.setSession(session);
+		isLoggedIn = Boolean(session.token || forumAuth.getToken());
+		currentUserId = session.user?.id || "";
+		isAdmin = session.user?.role === "admin";
+	} catch (error) {
+		if (error instanceof ForumApiError && error.status === 401) {
+			forumAuth.clear();
+			isLoggedIn = false;
+			currentUserId = "";
+			isAdmin = false;
+			return;
+		}
+		throw error;
 	}
+}
 
-	function updatePermission(post: ForumPostDetail | null) {
+async function loadEditingPost() {
+	if (mode !== "edit") {
+		loadingPost = false;
 		permissionChecked = true;
-		if (mode !== "edit") {
-			canSubmit = true;
-			return;
-		}
-		if (!isLoggedIn) {
-			canSubmit = false;
-			return;
-		}
-		if (!post) {
-			canSubmit = false;
-			return;
-		}
-		canSubmit = isAdmin || Boolean(post.authorId && currentUserId && post.authorId === currentUserId);
+		canSubmit = true;
+		return;
 	}
 
-	async function ensureSession() {
-		const authState = get(forumAuth);
-		isLoggedIn = Boolean(authState.token || forumAuth.getToken());
-		currentUserId = authState.user?.id || "";
-		isAdmin = authState.user?.role === "admin";
-
-		if (!isLoggedIn) {
-			return;
-		}
-		if (authState.user) {
-			return;
-		}
-
-		try {
-			const session = await getSession();
-			forumAuth.setSession(session);
-			isLoggedIn = Boolean(session.token || forumAuth.getToken());
-			currentUserId = session.user?.id || "";
-			isAdmin = session.user?.role === "admin";
-		} catch (error) {
-			if (error instanceof ForumApiError && error.status === 401) {
-				forumAuth.clear();
-				isLoggedIn = false;
-				currentUserId = "";
-				isAdmin = false;
-				return;
-			}
-			throw error;
-		}
+	postId = resolvePostId();
+	if (!postId) {
+		status = "缺少帖子 ID，无法编辑。";
+		loadingPost = false;
+		permissionChecked = true;
+		canSubmit = false;
+		return;
 	}
 
-	async function loadEditingPost() {
-		if (mode !== "edit") {
-			loadingPost = false;
+	loadingPost = true;
+	status = "";
+	try {
+		await ensureSession();
+		if (!isLoggedIn) {
+			status = "请先登录论坛后再编辑帖子。";
 			permissionChecked = true;
-			canSubmit = true;
+			canSubmit = false;
 			return;
 		}
 
-		postId = resolvePostId();
+		const post = await getPost(postId);
+		applyPost(post);
+		updatePermission(post);
+		if (!canSubmit) {
+			status = "你没有权限编辑这篇帖子。";
+		}
+	} catch (error) {
+		permissionChecked = true;
+		status =
+			error instanceof Error ? error.message : "帖子加载失败，请稍后重试。";
+		canSubmit = false;
+	} finally {
+		loadingPost = false;
+	}
+}
+
+async function submit() {
+	if (submitting || loadingPost) {
+		return;
+	}
+	if (!title.trim() || !content.trim()) {
+		status = "请先填写标题和内容。";
+		return;
+	}
+	if (mode === "edit") {
 		if (!postId) {
-			status = "缺少帖子 ID，无法编辑。";
-			loadingPost = false;
-			permissionChecked = true;
-			canSubmit = false;
+			status = "缺少帖子 ID，无法保存。";
 			return;
 		}
-
-		loadingPost = true;
-		status = "";
-		try {
-			await ensureSession();
-			if (!isLoggedIn) {
-				status = "请先登录论坛后再编辑帖子。";
-				permissionChecked = true;
-				canSubmit = false;
-				return;
-			}
-
-			const post = await getPost(postId);
-			applyPost(post);
-			updatePermission(post);
-			if (!canSubmit) {
-				status = "你没有权限编辑这篇帖子。";
-			}
-		} catch (error) {
-			permissionChecked = true;
-			status = error instanceof Error ? error.message : "帖子加载失败，请稍后重试。";
-			canSubmit = false;
-		} finally {
-			loadingPost = false;
+		if (!canSubmit) {
+			status = isLoggedIn
+				? "你没有权限编辑这篇帖子。"
+				: "请先登录论坛后再编辑帖子。";
+			return;
 		}
 	}
 
-	async function submit() {
-		if (submitting || loadingPost) {
-			return;
-		}
-		if (!title.trim() || !content.trim()) {
-			status = "请先填写标题和内容。";
-			return;
-		}
-		if (mode === "edit") {
-			if (!postId) {
-				status = "缺少帖子 ID，无法保存。";
-				return;
-			}
-			if (!canSubmit) {
-				status = isLoggedIn ? "你没有权限编辑这篇帖子。" : "请先登录论坛后再编辑帖子。";
-				return;
-			}
-		}
+	const payload: ForumPostInput = {
+		title: title.trim(),
+		content: content.trim(),
+		categoryId: categoryId.trim() || undefined,
+	};
 
-		const payload: ForumPostInput = {
-			title: title.trim(),
-			content: content.trim(),
-			categoryId: categoryId.trim() || undefined,
-		};
+	submitting = true;
+	status = submittingLabel;
 
-		submitting = true;
-		status = submittingLabel;
-
-		try {
-			const result = mode === "edit" ? await updatePost(postId, payload) : await createPost(payload);
-			const nextPostId = String(result.id || postId || "").trim();
-			if (!nextPostId) {
-				throw new Error(mode === "edit" ? "保存成功，但未拿到帖子 ID" : "发帖成功，但未拿到帖子 ID");
-			}
-			status = `${mode === "edit" ? "保存" : "发布"}成功，即将前往帖子 #${nextPostId}`;
-			window.location.href = `/forum/post/?id=${encodeURIComponent(nextPostId)}`;
-		} catch (error) {
-			status = error instanceof Error ? error.message : mode === "edit" ? "保存失败，请稍后重试。" : "发布失败，请稍后重试。";
-		} finally {
-			submitting = false;
+	try {
+		const result =
+			mode === "edit"
+				? await updatePost(postId, payload)
+				: await createPost(payload);
+		const nextPostId = String(result.id || postId || "").trim();
+		if (!nextPostId) {
+			throw new Error(
+				mode === "edit"
+					? "保存成功，但未拿到帖子 ID"
+					: "发帖成功，但未拿到帖子 ID",
+			);
 		}
+		status = `${mode === "edit" ? "保存" : "发布"}成功，即将前往帖子 #${nextPostId}`;
+		window.location.href = `/forum/post/?id=${encodeURIComponent(nextPostId)}`;
+	} catch (error) {
+		status =
+			error instanceof Error
+				? error.message
+				: mode === "edit"
+					? "保存失败，请稍后重试。"
+					: "发布失败，请稍后重试。";
+	} finally {
+		submitting = false;
 	}
+}
 
-	onMount(() => {
-		const unsubscribe = forumAuth.subscribe((state) => {
-			isLoggedIn = Boolean(state.token);
-			currentUserId = state.user?.id || "";
-			isAdmin = state.user?.role === "admin";
-		});
-		loadEditingPost();
-		return unsubscribe;
+onMount(() => {
+	const unsubscribe = forumAuth.subscribe((state) => {
+		isLoggedIn = Boolean(state.token);
+		currentUserId = state.user?.id || "";
+		isAdmin = state.user?.role === "admin";
 	});
+	loadEditingPost();
+	return unsubscribe;
+});
 </script>
 
 <div class="card-base space-y-4 p-6 md:p-8">

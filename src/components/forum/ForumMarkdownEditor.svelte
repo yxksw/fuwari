@@ -1,216 +1,246 @@
 <script lang="ts">
-	import { createEventDispatcher, onDestroy, onMount } from "svelte";
-	import type Editor from "@toast-ui/editor";
-	import { ForumApiError } from "@/forum/types/api";
-	import { uploadFile, type ForumUploadType } from "@/forum/api/auth";
-	import { compressPostImage, isPostImageWithinLimit, POST_IMAGE_MAX_BYTES } from "@/forum/utils/image-compression";
+import { type ForumUploadType, uploadFile } from "@/forum/api/auth";
+import { ForumApiError } from "@/forum/types/api";
+import {
+	POST_IMAGE_MAX_BYTES,
+	compressPostImage,
+	isPostImageWithinLimit,
+} from "@/forum/utils/image-compression";
+import type Editor from "@toast-ui/editor";
+import { createEventDispatcher, onDestroy, onMount } from "svelte";
 
-	type EditorMode = "post" | "comment" | "reply";
+type EditorMode = "post" | "comment" | "reply";
 
-	const toolbarMap: Record<EditorMode, string[][]> = {
-		post: [
-			["heading", "bold", "italic", "strike"],
-			["hr", "quote"],
-			["ul", "ol", "task"],
-			["table", "link", "image"],
-			["code", "codeblock"],
-		],
-		comment: [["bold", "italic", "strike"], ["quote", "ul", "ol"], ["link", "image", "code", "codeblock"]],
-		reply: [["bold", "italic"], ["quote", "link", "image"], ["code", "codeblock"]],
-	};
+const toolbarMap: Record<EditorMode, string[][]> = {
+	post: [
+		["heading", "bold", "italic", "strike"],
+		["hr", "quote"],
+		["ul", "ol", "task"],
+		["table", "link", "image"],
+		["code", "codeblock"],
+	],
+	comment: [
+		["bold", "italic", "strike"],
+		["quote", "ul", "ol"],
+		["link", "image", "code", "codeblock"],
+	],
+	reply: [
+		["bold", "italic"],
+		["quote", "link", "image"],
+		["code", "codeblock"],
+	],
+};
 
-	const MAX_UPLOAD_SIZE_LABEL = `${Math.round(POST_IMAGE_MAX_BYTES / 1024)}KB`;
+const MAX_UPLOAD_SIZE_LABEL = `${Math.round(POST_IMAGE_MAX_BYTES / 1024)}KB`;
 
-	export let value = "";
-	export let placeholder = "支持 Markdown";
-	export let disabled = false;
-	export let submitting = false;
-	export let mode: EditorMode = "comment";
-	export let uploadType: Exclude<ForumUploadType, "avatar"> | undefined = undefined;
-	export let uploadPostId = "";
-	export let submitHint = "Ctrl/Cmd + Enter 提交";
-	export let minHeight = 220;
-	export let shellClass = "";
-	export let autoFocus = false;
+export let value = "";
+export let placeholder = "支持 Markdown";
+export let disabled = false;
+export let submitting = false;
+export let mode: EditorMode = "comment";
+export let uploadType: Exclude<ForumUploadType, "avatar"> | undefined =
+	undefined;
+export let uploadPostId = "";
+export let submitHint = "Ctrl/Cmd + Enter 提交";
+export let minHeight = 220;
+export let shellClass = "";
+export let autoFocus = false;
 
-	const dispatch = createEventDispatcher<{
-		submit: void;
-		escape: void;
-		change: { value: string };
-	}>();
+const dispatch = createEventDispatcher<{
+	submit: void;
+	escape: void;
+	change: { value: string };
+}>();
 
-	let containerEl: HTMLDivElement;
-	let editor: Editor | null = null;
-	let internalValue = value;
-	let keydownCleanup: (() => void) | null = null;
-	let uploadStatus = "";
-	let uploading = false;
+let containerEl: HTMLDivElement;
+let editor: Editor | null = null;
+let internalValue = value;
+let keydownCleanup: (() => void) | null = null;
+let uploadStatus = "";
+let uploading = false;
 
-	function syncValue(nextValue: string) {
-		internalValue = nextValue;
-		if (value !== nextValue) {
-			value = nextValue;
-			dispatch("change", { value: nextValue });
-		}
+function syncValue(nextValue: string) {
+	internalValue = nextValue;
+	if (value !== nextValue) {
+		value = nextValue;
+		dispatch("change", { value: nextValue });
+	}
+}
+
+function updatePreviewClasses() {
+	const previewEl = containerEl?.querySelector(".toastui-editor-contents");
+	if (!previewEl) return;
+	previewEl.classList.add(
+		"custom-md",
+		"prose",
+		"prose-invert",
+		"!max-w-none",
+		"break-words",
+		"text-white/75",
+	);
+	previewEl.classList.remove("forum-comment-md");
+}
+
+function setDisabledState(nextDisabled: boolean) {
+	const root = containerEl?.querySelector(".toastui-editor-defaultUI");
+	root?.classList.toggle("is-disabled", nextDisabled);
+	editor?.setDisabled(nextDisabled);
+}
+
+function normalizeUploadError(error: unknown) {
+	if (error instanceof ForumApiError && error.status === 401) {
+		return "请先登录论坛后再上传图片。";
+	}
+	if (error instanceof Error && error.message) {
+		return error.message;
+	}
+	return "图片上传失败，请稍后重试。";
+}
+
+async function handleImageUpload(
+	blob: Blob | File,
+	callback: (url: string, text?: string) => void,
+) {
+	if (!uploadType) {
+		uploadStatus = "当前编辑器未启用图片上传。";
+		return;
 	}
 
-	function updatePreviewClasses() {
-		const previewEl = containerEl?.querySelector(".toastui-editor-contents");
-		if (!previewEl) return;
-		previewEl.classList.add("custom-md", "prose", "prose-invert", "!max-w-none", "break-words", "text-white/75");
-		previewEl.classList.remove("forum-comment-md");
+	if (!(blob instanceof File)) {
+		uploadStatus = "仅支持上传图片文件。";
+		return;
 	}
 
-	function setDisabledState(nextDisabled: boolean) {
-		const root = containerEl?.querySelector(".toastui-editor-defaultUI");
-		root?.classList.toggle("is-disabled", nextDisabled);
-		editor?.setDisabled(nextDisabled);
+	if (!blob.type.startsWith("image/")) {
+		uploadStatus = "仅支持上传图片文件。";
+		return;
 	}
 
-	function normalizeUploadError(error: unknown) {
-		if (error instanceof ForumApiError && error.status === 401) {
-			return "请先登录论坛后再上传图片。";
-		}
-		if (error instanceof Error && error.message) {
-			return error.message;
-		}
-		return "图片上传失败，请稍后重试。";
-	}
+	uploading = true;
+	uploadStatus = "正在压缩图片...";
 
-	async function handleImageUpload(blob: Blob | File, callback: (url: string, text?: string) => void) {
-		if (!uploadType) {
-			uploadStatus = "当前编辑器未启用图片上传。";
-			return;
-		}
+	let uploadFileTarget = blob;
 
-		if (!(blob instanceof File)) {
-			uploadStatus = "仅支持上传图片文件。";
-			return;
-		}
-
-		if (!blob.type.startsWith("image/")) {
-			uploadStatus = "仅支持上传图片文件。";
-			return;
-		}
-
-		uploading = true;
-		uploadStatus = "正在压缩图片...";
-
-		let uploadFileTarget = blob;
-
+	try {
 		try {
-			try {
-				uploadFileTarget = await compressPostImage(blob);
-			} catch (error) {
-				if (!isPostImageWithinLimit(blob)) {
-					throw new Error(`图片压缩失败，且原图仍超过 ${MAX_UPLOAD_SIZE_LABEL} 限制。`);
-				}
-				uploadFileTarget = blob;
-			}
-
-			if (!isPostImageWithinLimit(uploadFileTarget)) {
-				uploadStatus = `压缩后图片仍超过 ${MAX_UPLOAD_SIZE_LABEL}，请更换更小的图片。`;
-				return;
-			}
-
-			uploadStatus = uploadFileTarget === blob ? "正在上传图片..." : "正在上传压缩后的图片...";
-			const url = await uploadFile({
-				file: uploadFileTarget,
-				type: uploadType,
-				postId: uploadPostId || undefined,
-			});
-			if (!url) {
-				throw new Error("上传成功，但未获取到图片地址。");
-			}
-			callback(url, uploadFileTarget.name || blob.name || "image");
-			uploadStatus = "图片已上传并插入。";
-			syncValue(editor?.getMarkdown() || "");
+			uploadFileTarget = await compressPostImage(blob);
 		} catch (error) {
-			uploadStatus = normalizeUploadError(error);
-		} finally {
-			uploading = false;
+			if (!isPostImageWithinLimit(blob)) {
+				throw new Error(
+					`图片压缩失败，且原图仍超过 ${MAX_UPLOAD_SIZE_LABEL} 限制。`,
+				);
+			}
+			uploadFileTarget = blob;
 		}
+
+		if (!isPostImageWithinLimit(uploadFileTarget)) {
+			uploadStatus = `压缩后图片仍超过 ${MAX_UPLOAD_SIZE_LABEL}，请更换更小的图片。`;
+			return;
+		}
+
+		uploadStatus =
+			uploadFileTarget === blob ? "正在上传图片..." : "正在上传压缩后的图片...";
+		const url = await uploadFile({
+			file: uploadFileTarget,
+			type: uploadType,
+			postId: uploadPostId || undefined,
+		});
+		if (!url) {
+			throw new Error("上传成功，但未获取到图片地址。");
+		}
+		callback(url, uploadFileTarget.name || blob.name || "image");
+		uploadStatus = "图片已上传并插入。";
+		syncValue(editor?.getMarkdown() || "");
+	} catch (error) {
+		uploadStatus = normalizeUploadError(error);
+	} finally {
+		uploading = false;
 	}
+}
 
-	onMount(() => {
-		let disposed = false;
+onMount(() => {
+	let disposed = false;
 
-		void (async () => {
-			const { default: Editor } = await import("@toast-ui/editor");
-			if (disposed) {
+	void (async () => {
+		const { default: Editor } = await import("@toast-ui/editor");
+		if (disposed) {
+			return;
+		}
+
+		editor = new Editor({
+			el: containerEl,
+			height: `${minHeight}px`,
+			autofocus: autoFocus,
+			initialEditType: "markdown",
+			previewStyle: "vertical",
+			initialValue: value,
+			placeholder,
+			theme: "dark",
+			usageStatistics: false,
+			hideModeSwitch: true,
+			toolbarItems: toolbarMap[mode],
+			useCommandShortcut: true,
+			hooks: {
+				addImageBlobHook: async (
+					blob: Blob | File,
+					callback: (url: string, text?: string) => void,
+				) => {
+					await handleImageUpload(blob, callback);
+					return false;
+				},
+			},
+		});
+
+		editor.on("change", () => {
+			syncValue(editor?.getMarkdown() || "");
+			updatePreviewClasses();
+		});
+
+		const keydownHandler = (event: KeyboardEvent) => {
+			if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+				event.preventDefault();
+				dispatch("submit");
 				return;
 			}
 
-			editor = new Editor({
-				el: containerEl,
-				height: `${minHeight}px`,
-				autofocus: autoFocus,
-				initialEditType: "markdown",
-				previewStyle: "vertical",
-				initialValue: value,
-				placeholder,
-				theme: "dark",
-				usageStatistics: false,
-				hideModeSwitch: true,
-				toolbarItems: toolbarMap[mode],
-				useCommandShortcut: true,
-				hooks: {
-					addImageBlobHook: async (blob: Blob | File, callback: (url: string, text?: string) => void) => {
-						await handleImageUpload(blob, callback);
-						return false;
-					},
-				},
-			});
-
-			editor.on("change", () => {
-				syncValue(editor?.getMarkdown() || "");
-				updatePreviewClasses();
-			});
-
-			const keydownHandler = (event: KeyboardEvent) => {
-				if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-					event.preventDefault();
-					dispatch("submit");
-					return;
-				}
-
-				if (event.key === "Escape") {
-					dispatch("escape");
-				}
-			};
-
-			containerEl.addEventListener("keydown", keydownHandler);
-			keydownCleanup = () => containerEl.removeEventListener("keydown", keydownHandler);
-
-			updatePreviewClasses();
-			setDisabledState(disabled || submitting);
-		})();
-
-		return () => {
-			disposed = true;
+			if (event.key === "Escape") {
+				dispatch("escape");
+			}
 		};
-	});
 
-	onDestroy(() => {
-		keydownCleanup?.();
-		keydownCleanup = null;
-		editor?.destroy();
-		editor = null;
-	});
+		containerEl.addEventListener("keydown", keydownHandler);
+		keydownCleanup = () =>
+			containerEl.removeEventListener("keydown", keydownHandler);
 
-	$: if (editor && value !== internalValue) {
-		internalValue = value;
-		editor.setMarkdown(value, false);
 		updatePreviewClasses();
-	}
-
-	$: if (editor && placeholder) {
-		editor.setPlaceholder(placeholder);
-	}
-
-	$: if (editor) {
 		setDisabledState(disabled || submitting);
-	}
+	})();
+
+	return () => {
+		disposed = true;
+	};
+});
+
+onDestroy(() => {
+	keydownCleanup?.();
+	keydownCleanup = null;
+	editor?.destroy();
+	editor = null;
+});
+
+$: if (editor && value !== internalValue) {
+	internalValue = value;
+	editor.setMarkdown(value, false);
+	updatePreviewClasses();
+}
+
+$: if (editor && placeholder) {
+	editor.setPlaceholder(placeholder);
+}
+
+$: if (editor) {
+	setDisabledState(disabled || submitting);
+}
 </script>
 
 <div class={`forum-editor-shell ${shellClass}`.trim()}>

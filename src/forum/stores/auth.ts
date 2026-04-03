@@ -1,7 +1,11 @@
-import { writable } from "svelte/store";
 import type { SessionResult } from "@/forum/types/api";
 import type { ForumUser } from "@/forum/types/user";
-import { readLocalStorage, removeLocalStorage, writeLocalStorage } from "@/forum/utils/storage";
+import {
+	readLocalStorage,
+	removeLocalStorage,
+	writeLocalStorage,
+} from "@/forum/utils/storage";
+import { writable } from "svelte/store";
 
 const TOKEN_STORAGE_KEY = "forum-auth-token";
 
@@ -23,7 +27,8 @@ function createAuthStore() {
 
 	return {
 		subscribe,
-		setLoading: (loading: boolean) => update((state) => ({ ...state, loading })),
+		setLoading: (loading: boolean) =>
+			update((state) => ({ ...state, loading })),
 		setSession: (session: SessionResult) => {
 			if (session.token) {
 				writeLocalStorage(TOKEN_STORAGE_KEY, session.token);
@@ -32,14 +37,18 @@ function createAuthStore() {
 			update((state) => {
 				const nextUser = session.user
 					? {
-						...state.user,
-						...session.user,
-						id: session.user.id || state.user?.id || "",
-						username: session.user.username || state.user?.username,
-						displayName: session.user.displayName || state.user?.displayName || session.user.username || state.user?.username,
-						avatarUrl: session.user.avatarUrl || state.user?.avatarUrl,
-						email: session.user.email || state.user?.email,
-					}
+							...state.user,
+							...session.user,
+							id: session.user.id || state.user?.id || "",
+							username: session.user.username || state.user?.username,
+							displayName:
+								session.user.displayName ||
+								state.user?.displayName ||
+								session.user.username ||
+								state.user?.username,
+							avatarUrl: session.user.avatarUrl || state.user?.avatarUrl,
+							email: session.user.email || state.user?.email,
+						}
 					: state.user;
 
 				return {

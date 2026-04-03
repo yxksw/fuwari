@@ -24,7 +24,9 @@ const setup = () => {
 		try {
 			Fancybox.close();
 		} catch {}
-		document.querySelectorAll(".fancybox__container").forEach(el => el.remove());
+		document
+			.querySelectorAll(".fancybox__container")
+			.forEach((el) => el.remove());
 		document.documentElement.style.removeProperty("overflow");
 		document.body.style.removeProperty("overflow");
 	};
@@ -59,7 +61,7 @@ const setup = () => {
 		{ before: true },
 	);
 
-	window.addEventListener("keydown", e => {
+	window.addEventListener("keydown", (e) => {
 		if (e.key !== "Escape") return;
 		setTimeout(restoreNativeScrollIfSafe, 0);
 	});

@@ -1,54 +1,58 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import Icon from "@iconify/svelte";
-	import { getForumConfig } from "@/forum/api/config";
-	import { login } from "@/forum/api/auth";
-	import { forumAuth } from "@/forum/stores/auth";
-	import { ForumApiError } from "@/forum/types/api";
+import { login } from "@/forum/api/auth";
+import { getForumConfig } from "@/forum/api/config";
+import { forumAuth } from "@/forum/stores/auth";
+import { ForumApiError } from "@/forum/types/api";
+import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
 
-	let email = "";
-	let password = "";
-	let totpCode = "";
-	let loading = false;
-	let status = "";
-	let turnstileEnabled = false;
+let email = "";
+let password = "";
+let totpCode = "";
+let loading = false;
+let status = "";
+let turnstileEnabled = false;
 
-	async function loadConfig() {
-		try {
-			const config = await getForumConfig();
-			turnstileEnabled = config.turnstileEnabled;
-		} catch {
-			turnstileEnabled = false;
-		}
+async function loadConfig() {
+	try {
+		const config = await getForumConfig();
+		turnstileEnabled = config.turnstileEnabled;
+	} catch {
+		turnstileEnabled = false;
 	}
+}
 
-	async function submit() {
-		loading = true;
-		status = "登录中...";
+async function submit() {
+	loading = true;
+	status = "登录中...";
 
-		try {
-			const session = await login({ email, password, totpCode: totpCode || undefined });
-			forumAuth.setSession(session);
-			if (session.requiresTotp) {
-				status = "检测到需要二步验证，请填写 TOTP 验证码后重试。";
-				return;
-			}
-			status = "登录成功，正在跳转...";
-			window.location.href = "/forum/";
-		} catch (error) {
-			if (error instanceof ForumApiError && error.message === "TOTP_REQUIRED") {
-				status = "检测到需要二步验证，请填写 TOTP 验证码后重试。";
-				return;
-			}
-			status = error instanceof Error ? error.message : "登录失败，请稍后再试。";
-		} finally {
-			loading = false;
+	try {
+		const session = await login({
+			email,
+			password,
+			totpCode: totpCode || undefined,
+		});
+		forumAuth.setSession(session);
+		if (session.requiresTotp) {
+			status = "检测到需要二步验证，请填写 TOTP 验证码后重试。";
+			return;
 		}
+		status = "登录成功，正在跳转...";
+		window.location.href = "/forum/";
+	} catch (error) {
+		if (error instanceof ForumApiError && error.message === "TOTP_REQUIRED") {
+			status = "检测到需要二步验证，请填写 TOTP 验证码后重试。";
+			return;
+		}
+		status = error instanceof Error ? error.message : "登录失败，请稍后再试。";
+	} finally {
+		loading = false;
 	}
+}
 
-	onMount(() => {
-		loadConfig();
-	});
+onMount(() => {
+	loadConfig();
+});
 </script>
 
 <div class="card-base mx-auto max-w-2xl p-6 md:p-8">

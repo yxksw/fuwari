@@ -113,10 +113,15 @@ function syncSidebarProfileMode() {
 	const deepwiki = document.getElementById("sidebar-deepwiki");
 	if (!sidebar || !blogProfile || !forumProfile) return;
 
-	const forumBasePath = sidebar.getAttribute("data-forum-base-path") || "/forum/";
+	const forumBasePath =
+		sidebar.getAttribute("data-forum-base-path") || "/forum/";
 	const currentPath = window.location.pathname;
-	const normalizedCurrentPath = currentPath.endsWith("/") ? currentPath : `${currentPath}/`;
-	const normalizedForumBasePath = forumBasePath.endsWith("/") ? forumBasePath : `${forumBasePath}/`;
+	const normalizedCurrentPath = currentPath.endsWith("/")
+		? currentPath
+		: `${currentPath}/`;
+	const normalizedForumBasePath = forumBasePath.endsWith("/")
+		? forumBasePath
+		: `${forumBasePath}/`;
 	const isForumRoute =
 		normalizedCurrentPath === normalizedForumBasePath ||
 		normalizedCurrentPath.startsWith(normalizedForumBasePath);

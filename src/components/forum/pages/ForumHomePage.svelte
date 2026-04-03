@@ -1,209 +1,209 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import Icon from "@iconify/svelte";
-	import EnvironmentSwitcher from "@/components/forum/EnvironmentSwitcher.svelte";
-	import PostList from "@/components/forum/PostList.svelte";
-	import { getAdminCategories } from "@/forum/api/admin";
-	import { getPosts, type ForumPostListQuery } from "@/forum/api/posts";
-	import type { ForumCategory, ForumPostSummary } from "@/forum/types/post";
+import EnvironmentSwitcher from "@/components/forum/EnvironmentSwitcher.svelte";
+import PostList from "@/components/forum/PostList.svelte";
+import { getAdminCategories } from "@/forum/api/admin";
+import { type ForumPostListQuery, getPosts } from "@/forum/api/posts";
+import type { ForumCategory, ForumPostSummary } from "@/forum/types/post";
+import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
 
-	const PAGE_SIZE = 20;
-	const HIDDEN = -1;
-	const ADJ_DIST = 2;
-	const VISIBLE = ADJ_DIST * 2 + 1;
+const PAGE_SIZE = 20;
+const HIDDEN = -1;
+const ADJ_DIST = 2;
+const VISIBLE = ADJ_DIST * 2 + 1;
 
-	let posts: ForumPostSummary[] = [];
-	let categories: ForumCategory[] = [];
-	let loading = true;
-	let categoriesLoading = true;
-	let search = "";
-	const sortLabelMap: Record<string, string> = {
-		latest: "最新发布",
-		oldest: "最早发布",
-		likes: "最多点赞",
-		comments: "最多评论",
-		views: "最多观看",
-	};
+let posts: ForumPostSummary[] = [];
+let categories: ForumCategory[] = [];
+let loading = true;
+let categoriesLoading = true;
+let search = "";
+const sortLabelMap: Record<string, string> = {
+	latest: "最新发布",
+	oldest: "最早发布",
+	likes: "最多点赞",
+	comments: "最多评论",
+	views: "最多观看",
+};
 
-	let sort = "latest";
-	let category = "";
-	let currentPage = 1;
-	let total = 0;
-	let lastPage = 1;
-	let initialized = false;
+let sort = "latest";
+let category = "";
+let currentPage = 1;
+let total = 0;
+let lastPage = 1;
+let initialized = false;
 
-	function sanitizePage(value: string | null) {
-		const page = Number.parseInt(value || "1", 10);
-		return Number.isFinite(page) && page > 0 ? page : 1;
+function sanitizePage(value: string | null) {
+	const page = Number.parseInt(value || "1", 10);
+	return Number.isFinite(page) && page > 0 ? page : 1;
+}
+
+function readQueryState() {
+	const params = new URLSearchParams(window.location.search);
+	search = params.get("search") || "";
+	sort = params.get("sort") || "latest";
+	category = params.get("category") || "";
+	currentPage = sanitizePage(params.get("page"));
+}
+
+function writeQueryState() {
+	const params = new URLSearchParams(window.location.search);
+	if (search) {
+		params.set("search", search);
+	} else {
+		params.delete("search");
 	}
-
-	function readQueryState() {
-		const params = new URLSearchParams(window.location.search);
-		search = params.get("search") || "";
-		sort = params.get("sort") || "latest";
-		category = params.get("category") || "";
-		currentPage = sanitizePage(params.get("page"));
+	if (sort && sort !== "latest") {
+		params.set("sort", sort);
+	} else {
+		params.delete("sort");
 	}
-
-	function writeQueryState() {
-		const params = new URLSearchParams(window.location.search);
-		if (search) {
-			params.set("search", search);
-		} else {
-			params.delete("search");
-		}
-		if (sort && sort !== "latest") {
-			params.set("sort", sort);
-		} else {
-			params.delete("sort");
-		}
-		if (category) {
-			params.set("category", category);
-		} else {
-			params.delete("category");
-		}
-		if (currentPage > 1) {
-			params.set("page", String(currentPage));
-		} else {
-			params.delete("page");
-		}
-		const queryString = params.toString();
-		const target = queryString ? `?${queryString}` : window.location.pathname;
-		window.history.replaceState({}, "", target);
+	if (category) {
+		params.set("category", category);
+	} else {
+		params.delete("category");
 	}
+	if (currentPage > 1) {
+		params.set("page", String(currentPage));
+	} else {
+		params.delete("page");
+	}
+	const queryString = params.toString();
+	const target = queryString ? `?${queryString}` : window.location.pathname;
+	window.history.replaceState({}, "", target);
+}
 
-	async function loadPosts(page = currentPage, syncUrl = true) {
-		loading = true;
-		currentPage = page;
-		if (syncUrl) {
+async function loadPosts(page = currentPage, syncUrl = true) {
+	loading = true;
+	currentPage = page;
+	if (syncUrl) {
+		writeQueryState();
+	}
+	try {
+		const query: ForumPostListQuery = {
+			search: search || undefined,
+			sort,
+			category: category || undefined,
+			page,
+			pageSize: PAGE_SIZE,
+		};
+		const result = await getPosts(query);
+		if (Array.isArray(result)) {
+			posts = result;
+			total = result.length;
+			lastPage = 1;
+			currentPage = 1;
+			writeQueryState();
+			return;
+		}
+		posts = result.items;
+		total = result.total || 0;
+		lastPage = Math.max(1, Math.ceil((result.total || 0) / PAGE_SIZE));
+		if (currentPage > lastPage) {
+			currentPage = lastPage;
 			writeQueryState();
 		}
-		try {
-			const query: ForumPostListQuery = {
-				search: search || undefined,
-				sort,
-				category: category || undefined,
-				page,
-				pageSize: PAGE_SIZE,
-			};
-			const result = await getPosts(query);
-			if (Array.isArray(result)) {
-				posts = result;
-				total = result.length;
-				lastPage = 1;
-				currentPage = 1;
-				writeQueryState();
-				return;
-			}
-			posts = result.items;
-			total = result.total || 0;
-			lastPage = Math.max(1, Math.ceil((result.total || 0) / PAGE_SIZE));
-			if (currentPage > lastPage) {
-				currentPage = lastPage;
-				writeQueryState();
-			}
-		} catch (error) {
-			console.error(error);
-			posts = [];
-			total = 0;
-			lastPage = 1;
-		} finally {
-			loading = false;
-		}
+	} catch (error) {
+		console.error(error);
+		posts = [];
+		total = 0;
+		lastPage = 1;
+	} finally {
+		loading = false;
+	}
+}
+
+function submitSearch() {
+	loadPosts(1);
+}
+
+function changeSort(nextSort: string) {
+	if (sort === nextSort) {
+		return;
+	}
+	sort = nextSort;
+	loadPosts(1);
+}
+
+function changeCategory(nextCategory: string) {
+	if (category === nextCategory) {
+		return;
+	}
+	category = nextCategory;
+	loadPosts(1);
+}
+
+function scrollToPageTop() {
+	if (typeof window === "undefined") {
+		return;
+	}
+	window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function goToPage(page: number) {
+	if (page < 1 || page > lastPage || page === currentPage || loading) {
+		return;
+	}
+	scrollToPageTop();
+	loadPosts(page);
+}
+
+$: pages = (() => {
+	let count = 1;
+	let left = currentPage;
+	let right = currentPage;
+	while (0 < left - 1 && right + 1 <= lastPage && count + 2 <= VISIBLE) {
+		count += 2;
+		left -= 1;
+		right += 1;
+	}
+	while (0 < left - 1 && count < VISIBLE) {
+		count += 1;
+		left -= 1;
+	}
+	while (right + 1 <= lastPage && count < VISIBLE) {
+		count += 1;
+		right += 1;
 	}
 
-	function submitSearch() {
-		loadPosts(1);
+	const values: number[] = [];
+	if (left > 1) values.push(1);
+	if (left === 3) values.push(2);
+	if (left > 3) values.push(HIDDEN);
+	for (let page = left; page <= right; page += 1) values.push(page);
+	if (right < lastPage - 2) values.push(HIDDEN);
+	if (right === lastPage - 2) values.push(lastPage - 1);
+	if (right < lastPage) values.push(lastPage);
+	return values;
+})();
+
+async function loadCategories() {
+	categoriesLoading = true;
+	try {
+		categories = await getAdminCategories();
+	} catch (error) {
+		console.error(error);
+		categories = [];
+	} finally {
+		categoriesLoading = false;
 	}
+}
 
-	function changeSort(nextSort: string) {
-		if (sort === nextSort) {
-			return;
-		}
-		sort = nextSort;
-		loadPosts(1);
-	}
+onMount(() => {
+	readQueryState();
+	loadCategories();
+	loadPosts(currentPage, false);
+	initialized = true;
 
-	function changeCategory(nextCategory: string) {
-		if (category === nextCategory) {
-			return;
-		}
-		category = nextCategory;
-		loadPosts(1);
-	}
-
-	function scrollToPageTop() {
-		if (typeof window === "undefined") {
-			return;
-		}
-		window.scrollTo({ top: 0, behavior: "smooth" });
-	}
-
-	function goToPage(page: number) {
-		if (page < 1 || page > lastPage || page === currentPage || loading) {
-			return;
-		}
-		scrollToPageTop();
-		loadPosts(page);
-	}
-
-	$: pages = (() => {
-		let count = 1;
-		let left = currentPage;
-		let right = currentPage;
-		while (0 < left - 1 && right + 1 <= lastPage && count + 2 <= VISIBLE) {
-			count += 2;
-			left -= 1;
-			right += 1;
-		}
-		while (0 < left - 1 && count < VISIBLE) {
-			count += 1;
-			left -= 1;
-		}
-		while (right + 1 <= lastPage && count < VISIBLE) {
-			count += 1;
-			right += 1;
-		}
-
-		const values: number[] = [];
-		if (left > 1) values.push(1);
-		if (left === 3) values.push(2);
-		if (left > 3) values.push(HIDDEN);
-		for (let page = left; page <= right; page += 1) values.push(page);
-		if (right < lastPage - 2) values.push(HIDDEN);
-		if (right === lastPage - 2) values.push(lastPage - 1);
-		if (right < lastPage) values.push(lastPage);
-		return values;
-	})();
-
-	async function loadCategories() {
-		categoriesLoading = true;
-		try {
-			categories = await getAdminCategories();
-		} catch (error) {
-			console.error(error);
-			categories = [];
-		} finally {
-			categoriesLoading = false;
-		}
-	}
-
-	onMount(() => {
+	const handlePopState = () => {
 		readQueryState();
-		loadCategories();
 		loadPosts(currentPage, false);
-		initialized = true;
+	};
 
-		const handlePopState = () => {
-			readQueryState();
-			loadPosts(currentPage, false);
-		};
-
-		window.addEventListener("popstate", handlePopState);
-		return () => {
-			window.removeEventListener("popstate", handlePopState);
-		};
-	});
+	window.addEventListener("popstate", handlePopState);
+	return () => {
+		window.removeEventListener("popstate", handlePopState);
+	};
+});
 </script>
 
 <div class="space-y-6">

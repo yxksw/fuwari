@@ -1,15 +1,15 @@
 ---
 import type { MarkdownHeading } from "astro";
 
+import ForumSidebarProfileCard from "@/components/forum/ForumSidebarProfileCard.svelte";
 import {
 	buildTimetableViewModel,
 	resolveCurrentWeek,
 } from "@/utils/timetable-normalizer";
 import { parseTimetableFile } from "@/utils/timetable-parser-server";
-import LiveTimetableStatus from "@components/timetable/LiveTimetableStatus.astro";
-import ForumSidebarProfileCard from "@/components/forum/ForumSidebarProfileCard.svelte";
-import Profile from "./Profile.astro";
 import { url } from "@/utils/url-utils";
+import LiveTimetableStatus from "@components/timetable/LiveTimetableStatus.astro";
+import Profile from "./Profile.astro";
 
 interface Props {
 	class?: string;

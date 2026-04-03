@@ -1,5 +1,9 @@
 import type { ApiListResult } from "@/forum/types/api";
-import type { ForumPostDetail, ForumPostInput, ForumPostSummary } from "@/forum/types/post";
+import type {
+	ForumPostDetail,
+	ForumPostInput,
+	ForumPostSummary,
+} from "@/forum/types/post";
 import { extractFirstImageUrlFromMarkdown } from "@/forum/utils/markdown";
 import { forumRequest } from "./client";
 
@@ -57,7 +61,9 @@ interface RawUpdatePostResult {
 }
 
 function normalizePost(post: RawPostRecord): ForumPostSummary {
-	const coverImageUrl = extractFirstImageUrlFromMarkdown(post.content) || extractFirstImageUrlFromMarkdown(post.excerpt);
+	const coverImageUrl =
+		extractFirstImageUrlFromMarkdown(post.content) ||
+		extractFirstImageUrlFromMarkdown(post.excerpt);
 
 	return {
 		id: String(post.id),
@@ -67,17 +73,24 @@ function normalizePost(post: RawPostRecord): ForumPostSummary {
 		excerpt: post.excerpt,
 		content: post.content,
 		coverImageUrl,
-		categoryId: post.category_id !== undefined ? String(post.category_id) : undefined,
-		category: post.category || (post.category_name ? { id: String(post.category_id || ""), name: post.category_name } : null),
-		author: post.author || (post.author_name || post.author_avatar
-			? {
-				id: post.author_id !== undefined ? String(post.author_id) : "",
-				username: post.author_name || "匿名",
-				displayName: post.author_name || "匿名",
-				avatarUrl: post.author_avatar || undefined,
-				role: post.author_role,
-			}
-			: null),
+		categoryId:
+			post.category_id !== undefined ? String(post.category_id) : undefined,
+		category:
+			post.category ||
+			(post.category_name
+				? { id: String(post.category_id || ""), name: post.category_name }
+				: null),
+		author:
+			post.author ||
+			(post.author_name || post.author_avatar
+				? {
+						id: post.author_id !== undefined ? String(post.author_id) : "",
+						username: post.author_name || "匿名",
+						displayName: post.author_name || "匿名",
+						avatarUrl: post.author_avatar || undefined,
+						role: post.author_role,
+					}
+				: null),
 		viewCount: post.view_count,
 		commentCount: post.comment_count,
 		likeCount: post.like_count,
@@ -113,14 +126,17 @@ function normalizePostListQuery(query: ForumPostListQuery) {
 		offset,
 		q: query.search,
 		category_id: query.category,
-		sort_by: query.sort ? (sortMap[query.sort] || query.sort) : undefined,
+		sort_by: query.sort ? sortMap[query.sort] || query.sort : undefined,
 	};
 }
 
 export async function getPosts(query: ForumPostListQuery = {}) {
-	const result = await forumRequest<RawPostListResult | RawPostRecord[]>("/api/posts", {
-		query: normalizePostListQuery(query),
-	});
+	const result = await forumRequest<RawPostListResult | RawPostRecord[]>(
+		"/api/posts",
+		{
+			query: normalizePostListQuery(query),
+		},
+	);
 
 	if (Array.isArray(result)) {
 		return result.map(normalizePost);
@@ -136,7 +152,9 @@ export async function getPosts(query: ForumPostListQuery = {}) {
 }
 
 export async function getPost(id: string) {
-	const result = await forumRequest<RawPostRecord | RawPostDetailResult>(`/api/posts/${id}`);
+	const result = await forumRequest<RawPostRecord | RawPostDetailResult>(
+		`/api/posts/${id}`,
+	);
 	const post = "id" in result ? result : result.post || result.data;
 	if (!post) {
 		throw new Error("帖子不存在");
@@ -197,8 +215,11 @@ export function deletePost(id: string) {
 }
 
 export function likePost(id: string) {
-	return forumRequest<{ liked: boolean; likeCount: number }>(`/api/posts/${id}/like`, {
-		method: "POST",
-		requiresAuth: true,
-	});
+	return forumRequest<{ liked: boolean; likeCount: number }>(
+		`/api/posts/${id}/like`,
+		{
+			method: "POST",
+			requiresAuth: true,
+		},
+	);
 }

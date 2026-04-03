@@ -1,9 +1,10 @@
-import { derived, get, writable } from "svelte/store";
 import type { ForumApiEnv } from "@/forum/types/api";
 import { readLocalStorage, writeLocalStorage } from "@/forum/utils/storage";
+import { derived, get, writable } from "svelte/store";
 
 export const FORUM_API_ENV_STORAGE_KEY = "forum-api-env";
-export const FORUM_API_CUSTOM_BASE_URL_STORAGE_KEY = "forum-api-custom-base-url";
+export const FORUM_API_CUSTOM_BASE_URL_STORAGE_KEY =
+	"forum-api-custom-base-url";
 
 export const FORUM_API_BASE_URLS: Record<ForumApiEnv, string> = {
 	prod: "https://i.2x.nz",
@@ -14,7 +15,9 @@ function normalizeBaseUrl(value: string) {
 	return value.trim().replace(/\/+$/, "");
 }
 
-function normalizeEnv(value: ForumApiEnv | string | null | undefined): ForumApiEnv {
+function normalizeEnv(
+	value: ForumApiEnv | string | null | undefined,
+): ForumApiEnv {
 	return value === "dev" ? "dev" : "prod";
 }
 
@@ -36,29 +39,42 @@ function sanitizeBaseUrl(value: string | null | undefined, env: ForumApiEnv) {
 }
 
 function createEnvStore() {
-	const initialEnv = normalizeEnv(readLocalStorage<ForumApiEnv | string>(FORUM_API_ENV_STORAGE_KEY, "prod"));
+	const initialEnv = normalizeEnv(
+		readLocalStorage<ForumApiEnv | string>(FORUM_API_ENV_STORAGE_KEY, "prod"),
+	);
 	const initialCustomBaseUrl = sanitizeBaseUrl(
-		readLocalStorage<string>(FORUM_API_CUSTOM_BASE_URL_STORAGE_KEY, FORUM_API_BASE_URLS[initialEnv]),
+		readLocalStorage<string>(
+			FORUM_API_CUSTOM_BASE_URL_STORAGE_KEY,
+			FORUM_API_BASE_URLS[initialEnv],
+		),
 		initialEnv,
 	);
 	const envStore = writable<ForumApiEnv>(initialEnv);
 	const customBaseUrlStore = writable<string>(initialCustomBaseUrl);
 
 	customBaseUrlStore.subscribe((value) => {
-		writeLocalStorage(FORUM_API_CUSTOM_BASE_URL_STORAGE_KEY, sanitizeBaseUrl(value, get(envStore)));
+		writeLocalStorage(
+			FORUM_API_CUSTOM_BASE_URL_STORAGE_KEY,
+			sanitizeBaseUrl(value, get(envStore)),
+		);
 	});
 
-	const baseUrl = derived([envStore, customBaseUrlStore], ([$env, $customBaseUrl]) => {
-		return sanitizeBaseUrl($customBaseUrl, $env);
-	});
+	const baseUrl = derived(
+		[envStore, customBaseUrlStore],
+		([$env, $customBaseUrl]) => {
+			return sanitizeBaseUrl($customBaseUrl, $env);
+		},
+	);
 
 	return {
 		subscribe: envStore.subscribe,
 		baseUrl,
 		customBaseUrl: {
 			subscribe: customBaseUrlStore.subscribe,
-			set: (value: string) => customBaseUrlStore.set(sanitizeBaseUrl(value, get(envStore))),
-			reset: (env: ForumApiEnv) => customBaseUrlStore.set(FORUM_API_BASE_URLS[env]),
+			set: (value: string) =>
+				customBaseUrlStore.set(sanitizeBaseUrl(value, get(envStore))),
+			reset: (env: ForumApiEnv) =>
+				customBaseUrlStore.set(FORUM_API_BASE_URLS[env]),
 		},
 		set: (value: ForumApiEnv) => {
 			const nextEnv = normalizeEnv(value);

@@ -9,7 +9,9 @@ export interface ForumToastDetail {
 export const FORUM_TOAST_EVENT = "forum:toast";
 
 export function emitToast(detail: ForumToastDetail) {
-	window.dispatchEvent(new CustomEvent<ForumToastDetail>(FORUM_TOAST_EVENT, { detail }));
+	window.dispatchEvent(
+		new CustomEvent<ForumToastDetail>(FORUM_TOAST_EVENT, { detail }),
+	);
 }
 
 export function emitSuccessToast(title: string, description: string) {

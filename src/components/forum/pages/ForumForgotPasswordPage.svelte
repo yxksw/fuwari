@@ -1,43 +1,43 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import Icon from "@iconify/svelte";
-	import { forgotPassword } from "@/forum/api/auth";
-	import { getForumConfig } from "@/forum/api/config";
+import { forgotPassword } from "@/forum/api/auth";
+import { getForumConfig } from "@/forum/api/config";
+import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
 
-	let email = "";
-	let loading = false;
-	let status = "";
-	let turnstileEnabled = false;
+let email = "";
+let loading = false;
+let status = "";
+let turnstileEnabled = false;
 
-	async function loadConfig() {
-		try {
-			const config = await getForumConfig();
-			turnstileEnabled = config.turnstileEnabled;
-		} catch {
-			turnstileEnabled = false;
-		}
+async function loadConfig() {
+	try {
+		const config = await getForumConfig();
+		turnstileEnabled = config.turnstileEnabled;
+	} catch {
+		turnstileEnabled = false;
 	}
+}
 
-	async function submit() {
-		if (!email.trim()) {
-			status = "请先填写邮箱。";
-			return;
-		}
-		loading = true;
-		status = "正在发送重置邮件...";
-		try {
-			await forgotPassword({ email: email.trim() });
-			status = "如果该邮箱已注册，重置密码邮件已发送，请注意查收。";
-		} catch (error) {
-			status = error instanceof Error ? error.message : "发送失败，请稍后重试。";
-		} finally {
-			loading = false;
-		}
+async function submit() {
+	if (!email.trim()) {
+		status = "请先填写邮箱。";
+		return;
 	}
+	loading = true;
+	status = "正在发送重置邮件...";
+	try {
+		await forgotPassword({ email: email.trim() });
+		status = "如果该邮箱已注册，重置密码邮件已发送，请注意查收。";
+	} catch (error) {
+		status = error instanceof Error ? error.message : "发送失败，请稍后重试。";
+	} finally {
+		loading = false;
+	}
+}
 
-	onMount(() => {
-		loadConfig();
-	});
+onMount(() => {
+	loadConfig();
+});
 </script>
 
 <div class="card-base mx-auto max-w-2xl space-y-4 p-6 md:p-8">

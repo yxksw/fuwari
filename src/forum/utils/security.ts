@@ -1,5 +1,6 @@
 function createRandomString(length: number) {
-	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	const chars =
+		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	const array = new Uint8Array(length);
 	crypto.getRandomValues(array);
 	return Array.from(array, (value) => chars[value % chars.length]).join("");

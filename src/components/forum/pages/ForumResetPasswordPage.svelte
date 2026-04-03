@@ -1,69 +1,69 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import Icon from "@iconify/svelte";
-	import { ForumApiError } from "@/forum/types/api";
-	import { getForumConfig } from "@/forum/api/config";
-	import { resetPassword } from "@/forum/api/auth";
+import { resetPassword } from "@/forum/api/auth";
+import { getForumConfig } from "@/forum/api/config";
+import { ForumApiError } from "@/forum/types/api";
+import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
 
-	let token = "";
-	let newPassword = "";
-	let totpCode = "";
-	let loading = false;
-	let status = "";
-	let turnstileEnabled = false;
+let token = "";
+let newPassword = "";
+let totpCode = "";
+let loading = false;
+let status = "";
+let turnstileEnabled = false;
 
-	function readTokenFromUrl() {
-		if (typeof window === "undefined") {
-			return "";
-		}
-		return new URLSearchParams(window.location.search).get("token") || "";
+function readTokenFromUrl() {
+	if (typeof window === "undefined") {
+		return "";
 	}
+	return new URLSearchParams(window.location.search).get("token") || "";
+}
 
-	async function loadConfig() {
-		try {
-			const config = await getForumConfig();
-			turnstileEnabled = config.turnstileEnabled;
-		} catch {
-			turnstileEnabled = false;
-		}
+async function loadConfig() {
+	try {
+		const config = await getForumConfig();
+		turnstileEnabled = config.turnstileEnabled;
+	} catch {
+		turnstileEnabled = false;
 	}
+}
 
-	async function submit() {
-		if (!token.trim()) {
-			status = "缺少重置 token。";
+async function submit() {
+	if (!token.trim()) {
+		status = "缺少重置 token。";
+		return;
+	}
+	if (newPassword.length < 8 || newPassword.length > 16) {
+		status = "新密码长度需为 8-16 个字符。";
+		return;
+	}
+	loading = true;
+	status = "正在重置密码...";
+	try {
+		await resetPassword({
+			token: token.trim(),
+			newPassword,
+			totpCode: totpCode.trim() || undefined,
+		});
+		status = "密码已重置，正在前往登录页...";
+		window.setTimeout(() => {
+			window.location.href = "/forum/auth/login/";
+		}, 1200);
+	} catch (error) {
+		if (error instanceof ForumApiError && error.message === "TOTP_REQUIRED") {
+			status = "该账号已开启二步验证，请填写 TOTP 验证码后重试。";
 			return;
 		}
-		if (newPassword.length < 8 || newPassword.length > 16) {
-			status = "新密码长度需为 8-16 个字符。";
-			return;
-		}
-		loading = true;
-		status = "正在重置密码...";
-		try {
-			await resetPassword({
-				token: token.trim(),
-				newPassword,
-				totpCode: totpCode.trim() || undefined,
-			});
-			status = "密码已重置，正在前往登录页...";
-			window.setTimeout(() => {
-				window.location.href = "/forum/auth/login/";
-			}, 1200);
-		} catch (error) {
-			if (error instanceof ForumApiError && error.message === "TOTP_REQUIRED") {
-				status = "该账号已开启二步验证，请填写 TOTP 验证码后重试。";
-				return;
-			}
-			status = error instanceof Error ? error.message : "重置失败，请稍后重试。";
-		} finally {
-			loading = false;
-		}
+		status = error instanceof Error ? error.message : "重置失败，请稍后重试。";
+	} finally {
+		loading = false;
 	}
+}
 
-	onMount(() => {
-		token = readTokenFromUrl();
-		loadConfig();
-	});
+onMount(() => {
+	token = readTokenFromUrl();
+	loadConfig();
+});
 </script>
 
 <div class="card-base mx-auto max-w-2xl space-y-4 p-6 md:p-8">

@@ -1,76 +1,79 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { get } from "svelte/store";
-	import Icon from "@iconify/svelte";
-	import { getCurrentUser } from "@/forum/api/auth";
-	import { forumAuth } from "@/forum/stores/auth";
-	import { ForumApiError } from "@/forum/types/api";
-	import type { ForumUser } from "@/forum/types/user";
+import { getCurrentUser } from "@/forum/api/auth";
+import { forumAuth } from "@/forum/stores/auth";
+import { ForumApiError } from "@/forum/types/api";
+import type { ForumUser } from "@/forum/types/user";
+import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
+import { get } from "svelte/store";
 
-	let user: ForumUser | null = null;
-	let hasToken = false;
+let user: ForumUser | null = null;
+let hasToken = false;
 
-	function resolveDisplayName(nextUser: ForumUser | null) {
-		return nextUser?.displayName || nextUser?.username || "游客";
+function resolveDisplayName(nextUser: ForumUser | null) {
+	return nextUser?.displayName || nextUser?.username || "游客";
+}
+
+function normalizeBio(value?: string) {
+	const normalized = value?.trim();
+	return normalized ? normalized : "";
+}
+
+function resolveUser(nextUser: ForumUser | null) {
+	user = nextUser;
+}
+
+async function restoreCurrentUser() {
+	const state = get(forumAuth);
+	hasToken = Boolean(state.token || forumAuth.getToken());
+	resolveUser(state.user);
+	if (!hasToken || state.user) {
+		return;
 	}
-
-	function normalizeBio(value?: string) {
-		const normalized = value?.trim();
-		return normalized ? normalized : "";
-	}
-
-	function resolveUser(nextUser: ForumUser | null) {
-		user = nextUser;
-	}
-
-	async function restoreCurrentUser() {
-		const state = get(forumAuth);
-		hasToken = Boolean(state.token || forumAuth.getToken());
-		resolveUser(state.user);
-		if (!hasToken || state.user) {
+	try {
+		const nextUser = await getCurrentUser();
+		forumAuth.setSession({
+			user: nextUser,
+			token: null,
+			requiresTotp: false,
+		});
+		resolveUser(nextUser);
+	} catch (error) {
+		if (error instanceof ForumApiError && error.status === 401) {
+			forumAuth.clear();
+			hasToken = false;
+			resolveUser(null);
 			return;
 		}
-		try {
-			const nextUser = await getCurrentUser();
-			forumAuth.setSession({
-				user: nextUser,
-				token: null,
-				requiresTotp: false,
-			});
-			resolveUser(nextUser);
-		} catch (error) {
-			if (error instanceof ForumApiError && error.status === 401) {
-				forumAuth.clear();
-				hasToken = false;
-				resolveUser(null);
-				return;
-			}
-			console.error(error);
-		}
+		console.error(error);
 	}
+}
 
-	function handleSwupContentReplaced() {
-		void restoreCurrentUser();
-	}
+function handleSwupContentReplaced() {
+	void restoreCurrentUser();
+}
 
-	onMount(() => {
-		const unsubscribe = forumAuth.subscribe((state) => {
-			hasToken = Boolean(state.token || forumAuth.getToken());
-			resolveUser(state.user);
-		});
-		document.addEventListener("swup:contentReplaced", handleSwupContentReplaced);
-		void restoreCurrentUser();
-		return () => {
-			document.removeEventListener("swup:contentReplaced", handleSwupContentReplaced);
-			unsubscribe();
-		};
+onMount(() => {
+	const unsubscribe = forumAuth.subscribe((state) => {
+		hasToken = Boolean(state.token || forumAuth.getToken());
+		resolveUser(state.user);
 	});
+	document.addEventListener("swup:contentReplaced", handleSwupContentReplaced);
+	void restoreCurrentUser();
+	return () => {
+		document.removeEventListener(
+			"swup:contentReplaced",
+			handleSwupContentReplaced,
+		);
+		unsubscribe();
+	};
+});
 
-	$: displayName = resolveDisplayName(user);
-	$: username = user?.username?.trim() || "";
-	$: bio = normalizeBio(user?.bio);
-	$: socialLinks = [] as Array<{ label: string; url: string; icon: string }>;
-	$: isGuest = !user;
+$: displayName = resolveDisplayName(user);
+$: username = user?.username?.trim() || "";
+$: bio = normalizeBio(user?.bio);
+$: socialLinks = [] as Array<{ label: string; url: string; icon: string }>;
+$: isGuest = !user;
 </script>
 
 {#if isGuest}

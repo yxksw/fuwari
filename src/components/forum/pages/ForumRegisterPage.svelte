@@ -1,79 +1,79 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import Icon from "@iconify/svelte";
-	import { register } from "@/forum/api/auth";
-	import { getForumConfig } from "@/forum/api/config";
+import { register } from "@/forum/api/auth";
+import { getForumConfig } from "@/forum/api/config";
+import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
 
-	let username = "";
-	let email = "";
-	let password = "";
-	let status = "";
-	let loading = false;
-	let turnstileEnabled = false;
-	let allowRegistration = true;
+let username = "";
+let email = "";
+let password = "";
+let status = "";
+let loading = false;
+let turnstileEnabled = false;
+let allowRegistration = true;
 
-	async function loadConfig() {
-		try {
-			const config = await getForumConfig();
-			turnstileEnabled = config.turnstileEnabled;
-			allowRegistration = config.allowRegistration !== false;
-		} catch {
-			turnstileEnabled = false;
-			allowRegistration = true;
-		}
+async function loadConfig() {
+	try {
+		const config = await getForumConfig();
+		turnstileEnabled = config.turnstileEnabled;
+		allowRegistration = config.allowRegistration !== false;
+	} catch {
+		turnstileEnabled = false;
+		allowRegistration = true;
+	}
+}
+
+function validateForm() {
+	const trimmedUsername = username.trim();
+	const trimmedEmail = email.trim();
+
+	if (!allowRegistration) {
+		return "当前论坛暂未开放注册。";
+	}
+	if (!trimmedUsername || !trimmedEmail || !password) {
+		return "请填写用户名、邮箱和密码。";
+	}
+	if (trimmedUsername.length > 20) {
+		return "用户名最多 20 个字符。";
+	}
+	if (trimmedEmail.length > 50) {
+		return "邮箱最多 50 个字符。";
+	}
+	if (password.length < 8 || password.length > 16) {
+		return "密码长度需为 8-16 个字符。";
+	}
+	return "";
+}
+
+async function submit() {
+	const validationMessage = validateForm();
+	if (validationMessage) {
+		status = validationMessage;
+		return;
 	}
 
-	function validateForm() {
-		const trimmedUsername = username.trim();
-		const trimmedEmail = email.trim();
-
-		if (!allowRegistration) {
-			return "当前论坛暂未开放注册。";
-		}
-		if (!trimmedUsername || !trimmedEmail || !password) {
-			return "请填写用户名、邮箱和密码。";
-		}
-		if (trimmedUsername.length > 20) {
-			return "用户名最多 20 个字符。";
-		}
-		if (trimmedEmail.length > 50) {
-			return "邮箱最多 50 个字符。";
-		}
-		if (password.length < 8 || password.length > 16) {
-			return "密码长度需为 8-16 个字符。";
-		}
-		return "";
+	loading = true;
+	status = "注册中...";
+	try {
+		const result = await register({
+			username: username.trim(),
+			email: email.trim(),
+			password,
+		});
+		status = result.message || "注册成功，请前往邮箱完成验证。";
+		window.setTimeout(() => {
+			window.location.href = "/forum/auth/login/";
+		}, 1200);
+	} catch (error) {
+		status = error instanceof Error ? error.message : "注册失败，请稍后重试。";
+	} finally {
+		loading = false;
 	}
+}
 
-	async function submit() {
-		const validationMessage = validateForm();
-		if (validationMessage) {
-			status = validationMessage;
-			return;
-		}
-
-		loading = true;
-		status = "注册中...";
-		try {
-			const result = await register({
-				username: username.trim(),
-				email: email.trim(),
-				password,
-			});
-			status = result.message || "注册成功，请前往邮箱完成验证。";
-			window.setTimeout(() => {
-				window.location.href = "/forum/auth/login/";
-			}, 1200);
-		} catch (error) {
-			status = error instanceof Error ? error.message : "注册失败，请稍后重试。";
-		} finally {
-			loading = false;
-		}
-	}
-
-	onMount(() => {
-		loadConfig();
-	});
+onMount(() => {
+	loadConfig();
+});
 </script>
 
 <div class="card-base mx-auto max-w-2xl space-y-4 p-6 md:p-8">

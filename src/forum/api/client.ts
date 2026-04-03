@@ -1,8 +1,8 @@
-import { get } from "svelte/store";
 import { forumAuth } from "@/forum/stores/auth";
 import { forumEnv } from "@/forum/stores/env";
 import { ForumApiError, type ForumApiErrorPayload } from "@/forum/types/api";
 import { createSecurityHeaders } from "@/forum/utils/security";
+import { get } from "svelte/store";
 
 export interface ForumRequestOptions extends RequestInit {
 	requiresAuth?: boolean;
@@ -10,7 +10,11 @@ export interface ForumRequestOptions extends RequestInit {
 	json?: unknown;
 }
 
-function buildUrl(path: string, query?: ForumRequestOptions["query"], baseUrl = get(forumEnv.baseUrl)) {
+function buildUrl(
+	path: string,
+	query?: ForumRequestOptions["query"],
+	baseUrl = get(forumEnv.baseUrl),
+) {
 	const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 	const url = new URL(normalizedPath, baseUrl);
 
@@ -30,14 +34,21 @@ async function parseResponse<T>(response: Response): Promise<T> {
 	const body = isJson ? await response.json() : await response.text();
 
 	if (!response.ok) {
-		const payload = (typeof body === "object" && body ? body : { message: typeof body === "string" ? body : undefined }) as ForumApiErrorPayload;
+		const payload = (
+			typeof body === "object" && body
+				? body
+				: { message: typeof body === "string" ? body : undefined }
+		) as ForumApiErrorPayload;
 		throw new ForumApiError(response.status, payload);
 	}
 
 	return body as T;
 }
 
-export async function forumRequest<T>(path: string, options: ForumRequestOptions = {}) {
+export async function forumRequest<T>(
+	path: string,
+	options: ForumRequestOptions = {},
+) {
 	const headers = new Headers(options.headers);
 	const method = (options.method || "GET").toUpperCase();
 	const token = forumAuth.getToken();
@@ -70,7 +81,8 @@ export async function forumRequest<T>(path: string, options: ForumRequestOptions
 		...options,
 		method,
 		headers,
-		body: options.json !== undefined ? JSON.stringify(options.json) : options.body,
+		body:
+			options.json !== undefined ? JSON.stringify(options.json) : options.body,
 	};
 
 	let response: Response;
@@ -79,7 +91,10 @@ export async function forumRequest<T>(path: string, options: ForumRequestOptions
 	} catch (error) {
 		if (method === "GET" && baseUrl !== defaultBaseUrl) {
 			try {
-				response = await fetch(buildUrl(path, options.query, defaultBaseUrl), requestInit);
+				response = await fetch(
+					buildUrl(path, options.query, defaultBaseUrl),
+					requestInit,
+				);
 				forumEnv.customBaseUrl.reset(currentEnv);
 				return parseResponse<T>(response);
 			} catch {
@@ -88,7 +103,10 @@ export async function forumRequest<T>(path: string, options: ForumRequestOptions
 		}
 		throw new ForumApiError(503, {
 			code: "FORUM_API_UNREACHABLE",
-			message: error instanceof Error ? `论坛接口不可访问：${error.message}` : "论坛接口不可访问，请检查环境地址配置。",
+			message:
+				error instanceof Error
+					? `论坛接口不可访问：${error.message}`
+					: "论坛接口不可访问，请检查环境地址配置。",
 		});
 	}
 
