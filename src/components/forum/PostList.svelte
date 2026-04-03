@@ -1,37 +1,39 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
-	import type { ForumPostSummary } from "@/forum/types/post";
-	import { formatForumDateTime } from "@/utils/date-utils";
+import type { ForumPostSummary } from "@/forum/types/post";
+import { formatForumDateTime } from "@/utils/date-utils";
+import Icon from "@iconify/svelte";
 
-	export let posts: ForumPostSummary[] | null | undefined = [];
-	export let loading = false;
-	export let emptyText = "暂无帖子";
+export let posts: ForumPostSummary[] | null | undefined = [];
+export let loading = false;
+export let emptyText = "暂无帖子";
 
-	$: safePosts = Array.isArray(posts) ? posts : [];
+$: safePosts = Array.isArray(posts) ? posts : [];
 
-	function navigateTo(url: string) {
-		if (typeof window === "undefined") {
-			return;
-		}
-		const swup = (window as Window & { swup?: { navigate: (targetUrl: string) => void } }).swup;
-		if (swup) {
-			swup.navigate(url);
-			return;
-		}
-		window.location.href = url;
+function navigateTo(url: string) {
+	if (typeof window === "undefined") {
+		return;
 	}
-
-	function goToPost(postId: string) {
-		navigateTo(`/forum/post/?id=${encodeURIComponent(postId)}`);
+	const swup = (
+		window as Window & { swup?: { navigate: (targetUrl: string) => void } }
+	).swup;
+	if (swup) {
+		swup.navigate(url);
+		return;
 	}
+	window.location.href = url;
+}
 
-	function goToUser(userId?: string, event?: MouseEvent | KeyboardEvent) {
-		event?.stopPropagation();
-		if (!userId) {
-			return;
-		}
-		navigateTo(`/forum/u/${encodeURIComponent(userId)}/`);
+function goToPost(postId: string) {
+	navigateTo(`/forum/post/?id=${encodeURIComponent(postId)}`);
+}
+
+function goToUser(userId?: string, event?: MouseEvent | KeyboardEvent) {
+	event?.stopPropagation();
+	if (!userId) {
+		return;
 	}
+	navigateTo(`/forum/u/?id=${encodeURIComponent(userId)}`);
+}
 </script>
 
 <div class="space-y-4">

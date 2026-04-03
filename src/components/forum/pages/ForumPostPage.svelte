@@ -355,7 +355,7 @@ function goToUser(userId?: string) {
 	if (!userId) {
 		return;
 	}
-	navigateTo(`/forum/u/${encodeURIComponent(userId)}/`);
+	navigateTo(`/forum/u/?id=${encodeURIComponent(userId)}`);
 }
 
 function isCurrentUserAdmin(user: ForumUser | null) {

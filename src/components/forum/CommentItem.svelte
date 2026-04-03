@@ -1,96 +1,121 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
-	import ForumMarkdownContent from "@/components/forum/ForumMarkdownContent.svelte";
-	import { deleteComment, likeComment } from "@/forum/api/comments";
-	import { formatForumDateTime } from "@/utils/date-utils";
-	import type { ForumComment } from "@/forum/types/comment";
-	import type { ForumUser } from "@/forum/types/user";
+import ForumMarkdownContent from "@/components/forum/ForumMarkdownContent.svelte";
+import { deleteComment, likeComment } from "@/forum/api/comments";
+import type { ForumComment } from "@/forum/types/comment";
+import type { ForumUser } from "@/forum/types/user";
+import { formatForumDateTime } from "@/utils/date-utils";
+import Icon from "@iconify/svelte";
 
-	export let comment: ForumComment;
-	export let activeReplyParentId: string | null = null;
-	export let canReply = false;
-	export let depth = 0;
-	export let onReplyToggle: (commentId: string | null) => void;
-	export let onReplyContentChange: (value: string) => void;
-	export let onReplySubmit: (comment: ForumComment) => void;
-	export let onReplyEscape: () => void;
-	export let onCommentPatched: (commentId: string, patch: Partial<ForumComment>) => void;
-	export let currentUser: ForumUser | null = null;
-	export let onCommentDeleted: () => void = () => {};
+export let comment: ForumComment;
+export let activeReplyParentId: string | null = null;
+export let canReply = false;
+export let depth = 0;
+export let onReplyToggle: (commentId: string | null) => void;
+export let onReplyContentChange: (value: string) => void;
+export let onReplySubmit: (comment: ForumComment) => void;
+export let onReplyEscape: () => void;
+export let onCommentPatched: (
+	commentId: string,
+	patch: Partial<ForumComment>,
+) => void;
+export let currentUser: ForumUser | null = null;
+export let onCommentDeleted: () => void = () => {};
 
-	function indentClass(level: number) {
-		return level > 0 ? "ml-4 border-l border-white/8 pl-4 md:ml-6 md:pl-5" : "";
+function indentClass(level: number) {
+	return level > 0 ? "ml-4 border-l border-white/8 pl-4 md:ml-6 md:pl-5" : "";
+}
+
+let likeBusy = false;
+let deleteBusy = false;
+
+function navigateTo(url: string) {
+	if (typeof window === "undefined") {
+		return;
 	}
-
-	let likeBusy = false;
-	let deleteBusy = false;
-
-	function navigateTo(url: string) {
-		if (typeof window === "undefined") {
-			return;
-		}
-		const swup = (window as Window & { swup?: { navigate: (targetUrl: string) => void } }).swup;
-		if (swup) {
-			swup.navigate(url);
-			return;
-		}
-		window.location.href = url;
+	const swup = (
+		window as Window & { swup?: { navigate: (targetUrl: string) => void } }
+	).swup;
+	if (swup) {
+		swup.navigate(url);
+		return;
 	}
+	window.location.href = url;
+}
 
-	function goToUser(userId?: string) {
-		if (!userId) {
-			return;
-		}
-		navigateTo(`/forum/u/${encodeURIComponent(userId)}/`);
+function goToUser(userId?: string) {
+	if (!userId) {
+		return;
 	}
+	navigateTo(`/forum/u/?id=${encodeURIComponent(userId)}`);
+}
 
-	function normalizeRole(role?: string) {
-		if (!role) {
-			return "";
-		}
-		const normalizedRole = role.trim().toLowerCase();
-		return ["admin", "administrator", "root", "superadmin", "super_admin"].includes(normalizedRole) ? "admin" : normalizedRole;
+function normalizeRole(role?: string) {
+	if (!role) {
+		return "";
 	}
+	const normalizedRole = role.trim().toLowerCase();
+	return [
+		"admin",
+		"administrator",
+		"root",
+		"superadmin",
+		"super_admin",
+	].includes(normalizedRole)
+		? "admin"
+		: normalizedRole;
+}
 
-	$: canDeleteComment = Boolean(
-		currentUser && (normalizeRole(currentUser.role) === "admin" || Boolean(comment.author?.id && currentUser.id === comment.author.id)),
-	);
+$: canDeleteComment = Boolean(
+	currentUser &&
+		(normalizeRole(currentUser.role) === "admin" ||
+			Boolean(comment.author?.id && currentUser.id === comment.author.id)),
+);
 
-	async function handleDelete() {
-		if (!canDeleteComment || deleteBusy) return;
-		if (typeof window !== "undefined" && !window.confirm("确定要删除这条评论吗？删除后不可恢复。")) {
-			return;
-		}
-		deleteBusy = true;
-		try {
-			await deleteComment(comment.id);
-			onCommentDeleted();
-		} catch (error) {
-			console.error(error);
-		} finally {
-			deleteBusy = false;
-		}
+async function handleDelete() {
+	if (!canDeleteComment || deleteBusy) return;
+	if (
+		typeof window !== "undefined" &&
+		!window.confirm("确定要删除这条评论吗？删除后不可恢复。")
+	) {
+		return;
 	}
-
-	async function toggleLike() {
-		if (likeBusy) return;
-		likeBusy = true;
-		try {
-			const previousLiked = Boolean(comment.liked);
-			const previousLikeCount = comment.likeCount ?? 0;
-			const result = await likeComment(comment.id);
-			const nextLiked = Boolean(result.liked);
-			const nextLikeCount =
-				typeof result.likeCount === "number"
-					? result.likeCount
-					: Math.max(0, previousLikeCount + (nextLiked === previousLiked ? 0 : nextLiked ? 1 : -1));
-			onCommentPatched(comment.id, { liked: nextLiked, likeCount: nextLikeCount });
-		} catch (error) {
-			console.error(error);
-		} finally {
-			likeBusy = false;
-		}
+	deleteBusy = true;
+	try {
+		await deleteComment(comment.id);
+		onCommentDeleted();
+	} catch (error) {
+		console.error(error);
+	} finally {
+		deleteBusy = false;
 	}
+}
+
+async function toggleLike() {
+	if (likeBusy) return;
+	likeBusy = true;
+	try {
+		const previousLiked = Boolean(comment.liked);
+		const previousLikeCount = comment.likeCount ?? 0;
+		const result = await likeComment(comment.id);
+		const nextLiked = Boolean(result.liked);
+		const nextLikeCount =
+			typeof result.likeCount === "number"
+				? result.likeCount
+				: Math.max(
+						0,
+						previousLikeCount +
+							(nextLiked === previousLiked ? 0 : nextLiked ? 1 : -1),
+					);
+		onCommentPatched(comment.id, {
+			liked: nextLiked,
+			likeCount: nextLikeCount,
+		});
+	} catch (error) {
+		console.error(error);
+	} finally {
+		likeBusy = false;
+	}
+}
 </script>
 
 <div class={`space-y-3 ${indentClass(depth)}`}>

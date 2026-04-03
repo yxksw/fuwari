@@ -1,117 +1,128 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { get } from "svelte/store";
-	import Icon from "@iconify/svelte";
-	import PostList from "@/components/forum/PostList.svelte";
-	import { getCurrentUser, getSession } from "@/forum/api/auth";
-	import { getUserPosts, getUserProfile } from "@/forum/api/users";
-	import { forumAuth } from "@/forum/stores/auth";
-	import { ForumApiError } from "@/forum/types/api";
-	import type { ForumPostSummary } from "@/forum/types/post";
-	import type { ForumUser } from "@/forum/types/user";
-	import { formatForumDateTime } from "@/utils/date-utils";
+import PostList from "@/components/forum/PostList.svelte";
+import { getCurrentUser, getSession } from "@/forum/api/auth";
+import { getUserPosts, getUserProfile } from "@/forum/api/users";
+import { forumAuth } from "@/forum/stores/auth";
+import { ForumApiError } from "@/forum/types/api";
+import type { ForumPostSummary } from "@/forum/types/post";
+import type { ForumUser } from "@/forum/types/user";
+import { formatForumDateTime } from "@/utils/date-utils";
+import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
+import { get } from "svelte/store";
 
-	export let userId = "";
+export let userId = "";
 
-	let profile: ForumUser | null = null;
-	let posts: ForumPostSummary[] = [];
-	let currentUser: ForumUser | null = null;
-	let loading = true;
-	let postsLoading = true;
-	let errorMessage = "";
+let profile: ForumUser | null = null;
+let posts: ForumPostSummary[] = [];
+let currentUser: ForumUser | null = null;
+let loading = true;
+let postsLoading = true;
+let errorMessage = "";
 
-	function resolveUserId() {
-		if (userId) {
-			return userId;
-		}
-		if (typeof window === "undefined") {
-			return "";
-		}
-		const match = window.location.pathname.match(/\/forum\/u\/([^/]+)\/?$/);
-		return match?.[1] ? decodeURIComponent(match[1]) : "";
+function resolveUserId() {
+	if (userId) {
+		return userId;
 	}
-
-	function genderLabel(gender?: ForumUser["gender"]) {
-		switch (gender) {
-			case "male":
-				return "男";
-			case "female":
-				return "女";
-			case "other":
-				return "其他";
-			case "prefer_not_to_say":
-				return "不方便透露";
-			default:
-				return "未设置";
-		}
+	if (typeof window === "undefined") {
+		return "";
 	}
+	const urlParams = new URLSearchParams(window.location.search);
+	const queryId = urlParams.get("id");
+	if (queryId) {
+		return decodeURIComponent(queryId);
+	}
+	const match = window.location.pathname.match(/\/forum\/u\/([^/]+)\/?$/);
+	return match?.[1] ? decodeURIComponent(match[1]) : "";
+}
 
-	$: isSelfProfile = Boolean(profile && currentUser && profile.id === currentUser.id);
+function genderLabel(gender?: ForumUser["gender"]) {
+	switch (gender) {
+		case "male":
+			return "男";
+		case "female":
+			return "女";
+		case "other":
+			return "其他";
+		case "prefer_not_to_say":
+			return "不方便透露";
+		default:
+			return "未设置";
+	}
+}
 
-	async function ensureCurrentUser() {
-		const state = getSessionState();
-		currentUser = state.user;
-		if (!state.hasToken || state.user) {
+$: isSelfProfile = Boolean(
+	profile && currentUser && profile.id === currentUser.id,
+);
+
+async function ensureCurrentUser() {
+	const state = getSessionState();
+	currentUser = state.user;
+	if (!state.hasToken || state.user) {
+		return;
+	}
+	try {
+		const session = await getSession();
+		forumAuth.setSession(session);
+		currentUser = session.user;
+	} catch (error) {
+		if (error instanceof ForumApiError && error.status === 401) {
+			forumAuth.clear();
+			currentUser = null;
 			return;
 		}
 		try {
-			const session = await getSession();
-			forumAuth.setSession(session);
-			currentUser = session.user;
-		} catch (error) {
-			if (error instanceof ForumApiError && error.status === 401) {
-				forumAuth.clear();
-				currentUser = null;
-				return;
-			}
-			try {
-				currentUser = await getCurrentUser();
-			} catch {
-				currentUser = null;
-			}
+			currentUser = await getCurrentUser();
+		} catch {
+			currentUser = null;
 		}
 	}
+}
 
-	function getSessionState() {
-		const token = forumAuth.getToken();
-		const state = get(forumAuth);
-		return {
-			hasToken: Boolean(token || state.token),
-			user: state.user,
-		};
-	}
+function getSessionState() {
+	const token = forumAuth.getToken();
+	const state = get(forumAuth);
+	return {
+		hasToken: Boolean(token || state.token),
+		user: state.user,
+	};
+}
 
-	async function loadPage() {
-		loading = true;
-		postsLoading = true;
-		errorMessage = "";
-		try {
-			await ensureCurrentUser();
-			const nextUserId = resolveUserId();
-			if (!nextUserId) {
-				throw new Error("用户 ID 无效。");
-			}
-			const [nextProfile, nextPosts] = await Promise.all([getUserProfile(nextUserId), getUserPosts(nextUserId)]);
-			profile = nextProfile;
-			posts = nextPosts.items;
-		} catch (error) {
-			profile = null;
-			posts = [];
-			errorMessage = error instanceof Error ? error.message : "用户主页加载失败。";
-		} finally {
-			loading = false;
-			postsLoading = false;
+async function loadPage() {
+	loading = true;
+	postsLoading = true;
+	errorMessage = "";
+	try {
+		await ensureCurrentUser();
+		const nextUserId = resolveUserId();
+		if (!nextUserId) {
+			throw new Error("用户 ID 无效。");
 		}
+		const [nextProfile, nextPosts] = await Promise.all([
+			getUserProfile(nextUserId),
+			getUserPosts(nextUserId),
+		]);
+		profile = nextProfile;
+		posts = nextPosts.items;
+	} catch (error) {
+		profile = null;
+		posts = [];
+		errorMessage =
+			error instanceof Error ? error.message : "用户主页加载失败。";
+	} finally {
+		loading = false;
+		postsLoading = false;
 	}
+}
 
-	onMount(() => {
-		userId = resolveUserId();
-		const unsubscribe = forumAuth.subscribe((state) => {
-			currentUser = state.user;
-		});
-		void loadPage();
-		return unsubscribe;
+onMount(() => {
+	userId = resolveUserId();
+	const unsubscribe = forumAuth.subscribe((state) => {
+		currentUser = state.user;
 	});
+	void loadPage();
+	return unsubscribe;
+});
 </script>
 
 {#if loading}
