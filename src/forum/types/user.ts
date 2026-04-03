@@ -13,6 +13,7 @@ export interface ForumUser {
 	role?: string;
 	createdAt?: string;
 	emailNotifications?: boolean;
+	articleNotifications?: boolean;
 	totpEnabled?: boolean;
 	verified?: boolean;
 }

@@ -1,149 +1,155 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import Icon from "@iconify/svelte";
-	import { getCurrentUser, updateMyProfile, type ForumProfilePayload } from "@/forum/api/auth";
-	import { forumAuth } from "@/forum/stores/auth";
-	import { ForumApiError } from "@/forum/types/api";
-	import type { ForumUser, ForumUserGender } from "@/forum/types/user";
-	import { emitErrorToast, emitSuccessToast } from "@/forum/utils/toast";
+import {
+	type ForumProfilePayload,
+	getCurrentUser,
+	updateMyProfile,
+} from "@/forum/api/auth";
+import { forumAuth } from "@/forum/stores/auth";
+import { ForumApiError } from "@/forum/types/api";
+import type { ForumUser, ForumUserGender } from "@/forum/types/user";
+import { emitErrorToast, emitSuccessToast } from "@/forum/utils/toast";
+import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
 
-	type GenderOption = {
-		value: ForumUserGender;
-		label: string;
+type GenderOption = {
+	value: ForumUserGender;
+	label: string;
+};
+
+const genderOptions: GenderOption[] = [
+	{ value: "male", label: "男" },
+	{ value: "female", label: "女" },
+	{ value: "other", label: "其他" },
+	{ value: "prefer_not_to_say", label: "不方便透露" },
+];
+
+const genderValues = new Set<ForumUserGender>(
+	genderOptions.map((option) => option.value),
+);
+
+let user: ForumUser | null = null;
+let loading = true;
+let saving = false;
+
+let gender = "";
+let bio = "";
+let age = "";
+let region = "";
+
+function applyUser(nextUser: ForumUser | null) {
+	user = nextUser;
+	gender = nextUser?.gender || "";
+	bio = nextUser?.bio || "";
+	age = nextUser?.age !== undefined ? String(nextUser.age) : "";
+	region = nextUser?.region || "";
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+	return error instanceof Error ? error.message : fallback;
+}
+
+function normalizeNullableText(value: string, maxLength: number) {
+	const normalized = value.trim();
+	if (!normalized) {
+		return null;
+	}
+	return normalized.slice(0, maxLength);
+}
+
+function validateGender(value: string): ForumUserGender | null {
+	if (!value) {
+		return null;
+	}
+	if (genderValues.has(value as ForumUserGender)) {
+		return value as ForumUserGender;
+	}
+	throw new Error("性别选项无效。");
+}
+
+function validateAge(value: string) {
+	const normalized = value.trim();
+	if (!normalized) {
+		return null;
+	}
+	if (!/^\d+$/.test(normalized)) {
+		throw new Error("年龄必须是 1 到 150 的整数。");
+	}
+	const parsed = Number(normalized);
+	if (!Number.isInteger(parsed) || parsed < 1 || parsed > 150) {
+		throw new Error("年龄必须是 1 到 150 的整数。");
+	}
+	return parsed;
+}
+
+function buildPayload(): ForumProfilePayload {
+	const nextBio = bio.trim();
+	const nextRegion = region.trim();
+	if (nextBio.length > 500) {
+		throw new Error("个人简介不能超过 500 字。");
+	}
+	if (nextRegion.length > 100) {
+		throw new Error("地区不能超过 100 字。");
+	}
+	return {
+		gender: validateGender(gender),
+		bio: normalizeNullableText(bio, 500),
+		age: validateAge(age),
+		region: normalizeNullableText(region, 100),
 	};
+}
 
-	const genderOptions: GenderOption[] = [
-		{ value: "male", label: "男" },
-		{ value: "female", label: "女" },
-		{ value: "other", label: "其他" },
-		{ value: "prefer_not_to_say", label: "不方便透露" },
-	];
-
-	const genderValues = new Set<ForumUserGender>(genderOptions.map((option) => option.value));
-
-	let user: ForumUser | null = null;
-	let loading = true;
-	let saving = false;
-
-	let gender = "";
-	let bio = "";
-	let age = "";
-	let region = "";
-
-	function applyUser(nextUser: ForumUser | null) {
-		user = nextUser;
-		gender = nextUser?.gender || "";
-		bio = nextUser?.bio || "";
-		age = nextUser?.age !== undefined ? String(nextUser.age) : "";
-		region = nextUser?.region || "";
-	}
-
-	function getErrorMessage(error: unknown, fallback: string) {
-		return error instanceof Error ? error.message : fallback;
-	}
-
-	function normalizeNullableText(value: string, maxLength: number) {
-		const normalized = value.trim();
-		if (!normalized) {
-			return null;
-		}
-		return normalized.slice(0, maxLength);
-	}
-
-	function validateGender(value: string): ForumUserGender | null {
-		if (!value) {
-			return null;
-		}
-		if (genderValues.has(value as ForumUserGender)) {
-			return value as ForumUserGender;
-		}
-		throw new Error("性别选项无效。");
-	}
-
-	function validateAge(value: string) {
-		const normalized = value.trim();
-		if (!normalized) {
-			return null;
-		}
-		if (!/^\d+$/.test(normalized)) {
-			throw new Error("年龄必须是 1 到 150 的整数。");
-		}
-		const parsed = Number(normalized);
-		if (!Number.isInteger(parsed) || parsed < 1 || parsed > 150) {
-			throw new Error("年龄必须是 1 到 150 的整数。");
-		}
-		return parsed;
-	}
-
-	function buildPayload(): ForumProfilePayload {
-		const nextBio = bio.trim();
-		const nextRegion = region.trim();
-		if (nextBio.length > 500) {
-			throw new Error("个人简介不能超过 500 字。");
-		}
-		if (nextRegion.length > 100) {
-			throw new Error("地区不能超过 100 字。");
-		}
-		return {
-			gender: validateGender(gender),
-			bio: normalizeNullableText(bio, 500),
-			age: validateAge(age),
-			region: normalizeNullableText(region, 100),
-		};
-	}
-
-	async function refreshSession(statusMessage?: string) {
-		const nextUser = await getCurrentUser();
-		forumAuth.setSession({
-			user: nextUser,
-			token: null,
-			requiresTotp: false,
-		});
-		applyUser(nextUser);
-		if (statusMessage) {
-			emitSuccessToast("个人信息", statusMessage);
-		}
-		return nextUser;
-	}
-
-	async function loadProfile() {
-		loading = true;
-		try {
-			await refreshSession();
-		} catch (error) {
-			if (error instanceof ForumApiError && error.status === 401) {
-				forumAuth.clear();
-			}
-			console.error(error);
-			applyUser(null);
-		} finally {
-			loading = false;
-		}
-	}
-
-	async function saveProfile() {
-		if (!user || saving) return;
-		let payload: ForumProfilePayload;
-		try {
-			payload = buildPayload();
-		} catch (error) {
-			emitErrorToast("个人信息", getErrorMessage(error, "资料校验失败。"));
-			return;
-		}
-		saving = true;
-		try {
-			await updateMyProfile(payload);
-			await refreshSession("个人信息已更新。");
-		} catch (error) {
-			emitErrorToast("个人信息", getErrorMessage(error, "保存个人信息失败。"));
-		} finally {
-			saving = false;
-		}
-	}
-
-	onMount(() => {
-		void loadProfile();
+async function refreshSession(statusMessage?: string) {
+	const nextUser = await getCurrentUser();
+	forumAuth.setSession({
+		user: nextUser,
+		token: null,
+		requiresTotp: false,
 	});
+	applyUser(nextUser);
+	if (statusMessage) {
+		emitSuccessToast("个人信息", statusMessage);
+	}
+	return nextUser;
+}
+
+async function loadProfile() {
+	loading = true;
+	try {
+		await refreshSession();
+	} catch (error) {
+		if (error instanceof ForumApiError && error.status === 401) {
+			forumAuth.clear();
+		}
+		console.error(error);
+		applyUser(null);
+	} finally {
+		loading = false;
+	}
+}
+
+async function saveProfile() {
+	if (!user || saving) return;
+	let payload: ForumProfilePayload;
+	try {
+		payload = buildPayload();
+	} catch (error) {
+		emitErrorToast("个人信息", getErrorMessage(error, "资料校验失败。"));
+		return;
+	}
+	saving = true;
+	try {
+		await updateMyProfile(payload);
+		await refreshSession("个人信息已更新。");
+	} catch (error) {
+		emitErrorToast("个人信息", getErrorMessage(error, "保存个人信息失败。"));
+	} finally {
+		saving = false;
+	}
+}
+
+onMount(() => {
+	void loadProfile();
+});
 </script>
 
 <div class="space-y-6">
@@ -226,6 +232,10 @@
 						<div>
 							<div class="text-white/40">个人简介</div>
 							<div class="mt-1 whitespace-pre-wrap rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-white/85">{user.bio || "未设置"}</div>
+						</div>
+						<div>
+							<div class="text-white/40">文章推送通知</div>
+							<div class="mt-1">{user.articleNotifications ? "已开启" : "已关闭"}</div>
 						</div>
 					</div>
 				</aside>

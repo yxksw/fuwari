@@ -1,5 +1,12 @@
 import type { RegisterResult, SessionResult } from "@/forum/types/api";
-import type { ForumUser, ForumUserGender, ForgotPasswordPayload, LoginPayload, RegisterPayload, ResetPasswordPayload } from "@/forum/types/user";
+import type {
+	ForgotPasswordPayload,
+	ForumUser,
+	ForumUserGender,
+	LoginPayload,
+	RegisterPayload,
+	ResetPasswordPayload,
+} from "@/forum/types/user";
 import { forumRequest } from "./client";
 
 export interface ForumProfilePayload {
@@ -28,6 +35,8 @@ interface RawSessionUser {
 	createdAt?: string;
 	email_notifications?: boolean;
 	emailNotifications?: boolean;
+	article_notifications?: boolean;
+	articleNotifications?: boolean;
 	totp_enabled?: boolean | number;
 	totpEnabled?: boolean | number;
 	two_factor_enabled?: boolean | number;
@@ -59,6 +68,8 @@ interface RawSessionResult {
 	createdAt?: string;
 	email_notifications?: boolean;
 	emailNotifications?: boolean;
+	article_notifications?: boolean;
+	articleNotifications?: boolean;
 	totp_enabled?: boolean | number;
 	totpEnabled?: boolean | number;
 	two_factor_enabled?: boolean | number;
@@ -72,6 +83,7 @@ interface ProfilePayload {
 	username?: string;
 	avatarUrl?: string;
 	emailNotifications?: boolean;
+	articleNotifications?: boolean;
 }
 
 interface RawProfileResult extends RawSessionResult {
@@ -143,7 +155,11 @@ function normalizeRole(user?: RawSessionUser | null) {
 	}
 	if (typeof rawRole === "string") {
 		const normalizedRole = rawRole.trim().toLowerCase();
-		if (["admin", "administrator", "root", "superadmin", "super_admin"].includes(normalizedRole)) {
+		if (
+			["admin", "administrator", "root", "superadmin", "super_admin"].includes(
+				normalizedRole,
+			)
+		) {
 			return "admin";
 		}
 		return normalizedRole;
@@ -221,8 +237,17 @@ function normalizeUser(user?: RawSessionUser | null): ForumUser | null {
 		role: normalizeRole(user),
 		createdAt: user.created_at || user.createdAt,
 		emailNotifications: user.email_notifications ?? user.emailNotifications,
-		totpEnabled: toOptionalBoolean(user.totp_enabled ?? user.totpEnabled ?? user.two_factor_enabled ?? user.mfa_enabled),
-		verified: toOptionalBoolean(user.verified ?? user.email_verified ?? user.emailVerified),
+		articleNotifications:
+			user.article_notifications ?? user.articleNotifications,
+		totpEnabled: toOptionalBoolean(
+			user.totp_enabled ??
+				user.totpEnabled ??
+				user.two_factor_enabled ??
+				user.mfa_enabled,
+		),
+		verified: toOptionalBoolean(
+			user.verified ?? user.email_verified ?? user.emailVerified,
+		),
 	};
 }
 
@@ -250,6 +275,8 @@ function resolveSessionUser(result: RawSessionResult) {
 			createdAt: result.createdAt,
 			email_notifications: result.email_notifications,
 			emailNotifications: result.emailNotifications,
+			article_notifications: result.article_notifications,
+			articleNotifications: result.articleNotifications,
 			totp_enabled: result.totp_enabled,
 			totpEnabled: result.totpEnabled,
 			two_factor_enabled: result.two_factor_enabled,
@@ -314,9 +341,12 @@ export async function getCurrentUser() {
 }
 
 export async function getCurrentUserAvatar() {
-	const result = await forumRequest<CurrentUserAvatarResult>("/api/user/avatar", {
-		requiresAuth: true,
-	});
+	const result = await forumRequest<CurrentUserAvatarResult>(
+		"/api/user/avatar",
+		{
+			requiresAuth: true,
+		},
+	);
 	return result.avatar_url || "";
 }
 
@@ -328,9 +358,11 @@ export async function updateProfile(payload: ProfilePayload) {
 			username: payload.username,
 			avatar_url: payload.avatarUrl,
 			email_notifications: payload.emailNotifications,
+			article_notifications: payload.articleNotifications,
 		},
 	});
-	const resolvedUser = result.data?.user ?? result.user ?? resolveSessionUser(result);
+	const resolvedUser =
+		result.data?.user ?? result.user ?? resolveSessionUser(result);
 	if (!resolvedUser && (result.success !== undefined || result.message)) {
 		return null;
 	}
@@ -348,7 +380,8 @@ export async function updateMyProfile(payload: ForumProfilePayload) {
 			region: payload.region,
 		},
 	});
-	const resolvedUser = result.data?.user ?? result.user ?? resolveSessionUser(result);
+	const resolvedUser =
+		result.data?.user ?? result.user ?? resolveSessionUser(result);
 	if (!resolvedUser && (result.success !== undefined || result.message)) {
 		return null;
 	}
@@ -376,18 +409,25 @@ export function uploadAvatar(file: File) {
 }
 
 export function changeEmail(payload: ChangeEmailPayload) {
-	return forumRequest<{ success?: boolean; message?: string }>("/api/user/change-email", {
-		method: "POST",
-		requiresAuth: true,
-		json: {
-			new_email: payload.newEmail,
-			totp_code: payload.totpCode,
+	return forumRequest<{ success?: boolean; message?: string }>(
+		"/api/user/change-email",
+		{
+			method: "POST",
+			requiresAuth: true,
+			json: {
+				new_email: payload.newEmail,
+				totp_code: payload.totpCode,
+			},
 		},
-	});
+	);
 }
 
 export async function verifyEmailChange(token?: string) {
-	const result = await forumRequest<{ success?: boolean; message?: string; user?: RawSessionUser }>("/api/verify-email-change", {
+	const result = await forumRequest<{
+		success?: boolean;
+		message?: string;
+		user?: RawSessionUser;
+	}>("/api/verify-email-change", {
 		requiresAuth: true,
 		query: {
 			token,
@@ -420,7 +460,10 @@ export async function setupTotp() {
 }
 
 export async function verifyTotp(payload: TotpVerifyPayload) {
-	const result = await forumRequest<{ success?: boolean; user?: RawSessionUser }>("/api/user/totp/verify", {
+	const result = await forumRequest<{
+		success?: boolean;
+		user?: RawSessionUser;
+	}>("/api/user/totp/verify", {
 		method: "POST",
 		requiresAuth: true,
 		json: payload,
