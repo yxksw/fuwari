@@ -390,7 +390,7 @@ onMount(() => {
 				<a href="/forum/auth/login/" class="text-[var(--primary)]">前往登录</a>
 			</div>
 		{:else}
-			<div class="grid gap-6 lg:grid-cols-2 onload-animation" style="animation-delay: 0ms;">
+			<div class="grid gap-6 lg:grid-cols-2 forum-fade-in">
 				<section class="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
 					<h2 class="text-lg font-bold text-white">基础资料</h2>
 					<div class="rounded-xl border border-white/10 bg-black/20 p-4">

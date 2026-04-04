@@ -136,7 +136,7 @@ onMount(() => {
 		{/if}
 	</div>
 {:else}
-	<div class="space-y-6 onload-animation" style="animation-delay: 0ms;">
+	<div class="space-y-6 forum-fade-in">
 		<section class="card-base p-6 md:p-8 space-y-5">
 			<div class="flex flex-col gap-5 border-b border-white/10 pb-6 md:flex-row md:items-start md:justify-between">
 				<div class="flex items-start gap-4 min-w-0">

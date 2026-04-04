@@ -58,3 +58,9 @@ html.is-animating .transition-swup-fade {
 #post-container :nth-child(5) { animation-delay: calc(var(--content-delay) + 250ms) }
 #post-container :nth-child(6) { animation-delay: calc(var(--content-delay) + 325ms) }
 
+/* Forum content fade-in */
+.forum-fade-in {
+    opacity: 0;
+    animation: 300ms fade-in-up forwards;
+}
+
