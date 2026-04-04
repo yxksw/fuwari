@@ -80,14 +80,20 @@ const initSwup = () => {
 	}
 };
 
-if (document.readyState !== "loading") {
-	initSwup();
-} else {
-	document.addEventListener("DOMContentLoaded", initSwup);
-}
+const initSwupImmediately = () => {
+	if (window.swup && !window.swup.initialized) {
+		window.swup.init();
+	}
+};
 
 if (window.swup) {
+	if (!window.swup.initialized) {
+		initSwup();
+	}
 	setup();
 } else {
-	document.addEventListener("swup:enable", setup);
+	document.addEventListener("swup:enable", () => {
+		initSwupImmediately();
+		setup();
+	});
 }
