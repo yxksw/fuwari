@@ -75,19 +75,27 @@ const setup = () => {
 };
 
 const initSwup = () => {
-	if (window.swup && !window.swup.initialized) {
+	if (
+		window.swup &&
+		typeof window.swup.init === "function" &&
+		!window.swup.initialized
+	) {
 		window.swup.init();
 	}
 };
 
 const initSwupImmediately = () => {
-	if (window.swup && !window.swup.initialized) {
+	if (
+		window.swup &&
+		typeof window.swup.init === "function" &&
+		!window.swup.initialized
+	) {
 		window.swup.init();
 	}
 };
 
 if (window.swup) {
-	if (!window.swup.initialized) {
+	if (typeof window.swup.init === "function" && !window.swup.initialized) {
 		initSwup();
 	}
 	setup();
