@@ -59,7 +59,6 @@ export let type: "post" | "comment" | "profile" | "list" | "me" = "list";
 					<div class="h-10 w-24 rounded-xl bg-white/8"></div>
 				</div>
 			</div>
-			<div class="text-white/50">正在恢复会话...</div>
 		</div>
 		<div class="grid gap-6 lg:grid-cols-2">
 			<div class="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
