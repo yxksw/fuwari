@@ -51,6 +51,7 @@ function truncateDisplayName(value?: string, maxLength = 10) {
 }
 
 let loading = true;
+let contentVisible = false;
 let refreshing = false;
 let status = "";
 let currentUser: ForumUser | null = null;
@@ -152,6 +153,9 @@ async function refreshData(showLoading = false) {
 	} finally {
 		loading = false;
 		refreshing = false;
+		setTimeout(() => {
+			contentVisible = true;
+		}, 50);
 	}
 }
 
@@ -593,9 +597,50 @@ onMount(async () => {
 		{/if}
 
 		{#if loading}
-			<p class="text-white/50">正在加载管理台数据...</p>
+			<div class="transition-opacity duration-200">
+				<div class="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4 animate-pulse">
+					<div class="grid gap-4 md:grid-cols-4">
+						<div class="rounded-xl border border-white/10 bg-white/5 p-5">
+							<div class="mb-1 h-4 w-16 rounded bg-white/8"></div>
+							<div class="mt-2 h-8 w-20 rounded bg-white/10"></div>
+						</div>
+						<div class="rounded-xl border border-white/10 bg-white/5 p-5">
+							<div class="mb-1 h-4 w-16 rounded bg-white/8"></div>
+							<div class="mt-2 h-8 w-20 rounded bg-white/10"></div>
+						</div>
+						<div class="rounded-xl border border-white/10 bg-white/5 p-5">
+							<div class="mb-1 h-4 w-16 rounded bg-white/8"></div>
+							<div class="mt-2 h-8 w-20 rounded bg-white/10"></div>
+						</div>
+						<div class="rounded-xl border border-white/10 bg-white/5 p-5">
+							<div class="mb-1 h-4 w-20 rounded bg-white/8"></div>
+							<div class="mt-2 h-8 w-16 rounded bg-white/10"></div>
+						</div>
+					</div>
+					<div class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+						<div class="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
+							<div class="h-5 w-20 rounded bg-white/10"></div>
+							<div class="space-y-3">
+								<div class="h-10 w-full rounded-xl bg-white/5"></div>
+								<div class="h-10 w-full rounded-xl bg-white/5"></div>
+							</div>
+						</div>
+						<div class="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
+							<div class="h-5 w-24 rounded bg-white/10"></div>
+							<div class="space-y-3">
+								<div class="h-4 w-full rounded bg-white/8"></div>
+								<div class="h-4 w-3/4 rounded bg-white/8"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 		{:else if !isAdmin}
-			<div class="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/60 space-y-3">
+			<div 
+				class="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/60 space-y-3 transition-opacity duration-200"
+				class:opacity-0={!contentVisible}
+				class:opacity-100={contentVisible}
+			>
 				<h2 class="text-lg font-bold text-white">无法进入管理控制台</h2>
 				<p>{status || "当前账号不是管理员，无法进入论坛管理控制台。"}</p>
 				<div class="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white/45 space-y-1">
@@ -606,6 +651,11 @@ onMount(async () => {
 				</div>
 			</div>
 		{:else}
+			<div 
+				class="transition-opacity duration-200"
+				class:opacity-0={!contentVisible}
+				class:opacity-100={contentVisible}
+			>
 			<div class="grid gap-4 md:grid-cols-4">
 				<div class="rounded-xl border border-white/10 bg-white/5 p-5">
 					<div class="text-sm text-white/40 mb-1">用户总数</div>
@@ -926,6 +976,7 @@ onMount(async () => {
 						</table>
 					</div>
 				</section>
+			</div>
 			</div>
 
 		{/if}
