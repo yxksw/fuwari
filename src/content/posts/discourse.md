@@ -1,6 +1,6 @@
 ---
 title: 手把手教你部署Discourse
-published: 2025-05-02
+published: 2025-05-01T16:00:00
 description: 'Discourse是一个开源的强大的论坛系统，让你马上就能拥有自己的BBS'
 image: ../assets/images/2025-05-02-22-03-04-image.webp
 tags: [Discourse]

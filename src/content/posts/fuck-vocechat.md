@@ -1,6 +1,6 @@
 ---
 title: 记录人生中第一次破解软件！FKvocechat！
-published: 2025-07-23
+published: 2025-07-22T16:00:00
 description: '感兴趣的可以先去voce.chat购买一个Pro版本后再阅读此文~本文也是一个使用REST API通信的软件通用的破解教程'
 image: '../assets/images/caa0d269-fc78-4352-8d71-0bc33c122ddd.webp'
 tags: [破解]

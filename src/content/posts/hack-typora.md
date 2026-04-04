@@ -1,6 +1,6 @@
 ---
 title: Typora免付费激活
-published: 2025-08-15
+published: 2025-08-14T16:00:00
 description: 'Typora是一个简洁易用（？）的MarkDown编辑器，不想交钱？改几行文件就破解！'
 image: '../assets/images/2025-08-20-21-08-22-image.webp'
 tags: [Typora]

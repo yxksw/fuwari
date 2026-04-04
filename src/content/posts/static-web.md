@@ -4,7 +4,7 @@ description: Serverless服务有很多，静态托管就是重中之重，来看
 draft: false
 image: ../assets/images/da8b7a38-7247-43af-b272-f012f2dd024d.webp
 lang: ''
-published: 2025-07-14
+published: 2025-07-13T16:00:00
 tags:
 - Vercel
 - Cloudflare

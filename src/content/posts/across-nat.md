@@ -4,7 +4,7 @@ description: 使用Zerotier，Tailscale，Cloudflare Tunnel可以实现多种内
 draft: false
 image: ../assets/images/2024-10-28-17-00-25-image.webp
 lang: ''
-published: 2024-10-28
+published: 2024-10-27T16:00:00
 tags:
 - Zerotier
 - Tailscale

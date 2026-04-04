@@ -4,7 +4,7 @@ description: 使用NapCat连接NoneBot2，打造自己的聊天机器人
 draft: false
 image: ../assets/images/QmcMSSKysZmgUCUk9W7hQUvZCtVSFH6hGKHctg99yo1yDE.webp
 lang: zh_CN
-published: 2024-11-20
+published: 2024-11-19T16:00:00
 tags:
 - QQBot
 title: 使用NoneBot2搭建你的QQBot！

@@ -4,7 +4,7 @@ description: 使用R2存储图片，通过Workers连接，最后使用a标签或
 draft: false
 image: ../assets/images/QmVgqgoC7G8NLS21WvR8j9gf5amu33XvuV68ZrgM5B9iFf.webp
 lang: ''
-published: 2025-03-05
+published: 2025-03-04T16:00:00
 tags:
 - Cloudflare R2
 - Cloudflare Workers

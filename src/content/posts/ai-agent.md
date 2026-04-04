@@ -1,6 +1,6 @@
 ---
 title: AI Agent 二三事
-published: 2026-03-05T22:51:54
+published: 2026-03-05T14:51:54
 description: 从实战角度对比 AI IDE 与 AI Agent，并演示如何用 ZCF 快速安装和配置 Codex。
 image: ../assets/images/ai-agent.png
 draft: false

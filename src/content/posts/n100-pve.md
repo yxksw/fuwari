@@ -4,7 +4,7 @@ description: 在N100小主机上安装PVE，然后在其中安装飞牛NAS和Deb
 draft: false
 image: ../assets/images/N100-PVE_cover.webp
 lang: ''
-published: 2024-10-28
+published: 2024-10-27T16:00:00
 tags:
 - PVE
 title: N100 - PVE（fnOS+Debian）基建记录

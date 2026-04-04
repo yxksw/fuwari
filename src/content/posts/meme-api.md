@@ -1,6 +1,6 @@
 ---
 title: meme-generator部署指南以及对接Koishi
-published: 2025-06-30
+published: 2025-06-29T16:00:00
 description: '很早之前我就很好奇那些用群友的头像做的表情包真的是人工p的吗，实则不然！'
 image: ../assets/images/ee29b679-3355-453e-917b-2b85ae9106a0.webp
 tags: [meme, Koishi, QQBot]

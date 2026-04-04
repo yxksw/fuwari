@@ -4,7 +4,7 @@ description: 你可能不知道，我曾经购入过一台N100迷你主机，不
 draft: false
 image: ../assets/images/b8b7d06a-1ca4-4786-a147-5275f57dfb3b.webp
 lang: ''
-published: 2025-02-23
+published: 2025-02-22T16:00:00
 tags:
 - NAS
 title: 我买了个新NAS...

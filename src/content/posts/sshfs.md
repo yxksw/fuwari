@@ -1,6 +1,6 @@
 ---
 title: 将你的Linux硬盘映射到Windows？
-published: 2025-08-03
+published: 2025-08-02T16:00:00
 description: '如何像Windows一样管理Linux文件？SSHFS来帮你！'
 image: '../assets/images/2025-08-03-19-15-42-image.webp'
 tags: [SSHFS]

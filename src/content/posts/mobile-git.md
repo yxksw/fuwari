@@ -4,7 +4,7 @@ description: 在桌面端，我们可以用 VS Code 和 Obsidian 写文章；那
 draft: false
 image: ../assets/images/Screenshot_2025-11-11-14-04-23-56_a2e3670364a4153bdb03dad30c8d4108.webp
 lang: ""
-published: 2025-11-11
+published: 2025-11-10T16:00:00
 tags:
   - Git
   - 博客

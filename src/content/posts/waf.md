@@ -1,6 +1,6 @@
 ---
 title: 静态网站也需要WAF？Cloudflare不需要但是EdgeOne/ESA需要！
-published: 2026-01-18
+published: 2026-01-17T16:00:00
 description: 在几周前，我的网站累计被DDoS了约100TB的流量，哪怕我是静态网站，并不会被“打死”，但因为流量过大，还是被EdgeOne取消接入了，其实这件事本不会发生...
 image: ../assets/images/waf.webp
 draft: false

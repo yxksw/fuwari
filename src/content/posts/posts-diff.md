@@ -1,6 +1,6 @@
 ---
 title: 如何给你的文章上修订记录？就像维基百科那样！
-published: 2026-02-11T10:51:13
+published: 2026-02-11T02:51:13
 description: 虽然我们已经做了基于客户端的文章更新提醒，但如果读者还没来得及查看上一次改动，文章又发生了新的变化呢？这时候，就需要一套覆盖完整生命周期的文章 diff 展示方案。
 image: ../assets/images/posts-diff.png
 draft: false

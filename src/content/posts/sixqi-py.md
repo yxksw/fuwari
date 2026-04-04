@@ -1,6 +1,6 @@
 ---
 title: 我用Claude10分钟写了个六子棋...?
-published: 2025-07-14
+published: 2025-07-13T16:00:00
 description: '本来是不想写这种看起来就很简单的项目的，奈何群u苦苦哀求，只好实现'
 image: ../assets/images/d359734c-1415-4ebc-8caf-4d807282fad6.webp
 tags: [六子棋, AI]

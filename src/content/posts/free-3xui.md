@@ -1,6 +1,6 @@
 ---
 title: 白嫖免费的3x-ui面板
-published: 2025-05-01
+published: 2025-04-30T16:00:00
 description: '3x-ui面板是一个非常好用的代理面板，很多人都在使用他，如果有人使用的是默认密码...'
 image: ../assets/images/8e3dd949-97f8-44b1-ab44-e29b64b6c1a8.webp
 tags: [3x-ui]

@@ -1,6 +1,6 @@
 ---
 title: 一行命令拉爆你的Win11硬盘4K随机性能！
-published: 2026-02-27T06:27:08
+published: 2026-02-26T22:27:08
 description: 你知道吗？其实Windows一直都在让NVMe硬盘以兼容模式跑！
 image: ../assets/images/win11-native-nvme.png
 draft: false

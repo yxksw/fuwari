@@ -1,6 +1,6 @@
 ---
 title: 你在做全栈吗？你想要前后端统一的热重载吗？
-published: 2026-03-24T19:51:17
+published: 2026-03-24T11:51:17
 description: 经常做全栈的小伙伴们都知道，写完后端看效果要dev，写完前端看效果也要dev，那么有没有一劳永逸的解决方案呢？
 image: ../assets/images/concurrently.png
 draft: false

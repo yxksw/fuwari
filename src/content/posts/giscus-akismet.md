@@ -1,6 +1,6 @@
 ---
 title: 你是否在寻找一个评论系统而又不想自托管？又饱受垃圾评论的叨扰？
-published: 2025-08-04
+published: 2025-08-03T16:00:00
 description: Giscus就是这样一个很好的评论区，它基于Github Discussion，无需自托管，无需你管理账号，仅需引入一个JS即可用！
 image: ../assets/images/2025-08-04-12-14-21-image.webp
 tags:

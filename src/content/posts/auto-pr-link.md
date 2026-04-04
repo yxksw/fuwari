@@ -1,6 +1,6 @@
 ---
 title: 网站加友链的最佳姿势是什么？当然是自动化啦！
-published: 2026-02-18T06:41:17
+published: 2026-02-17T22:41:17
 description: 如果你经常一觉醒来就看到一堆友链 PR，还得逐个检查格式、顺手帮对方修语法错误，那把这件事自动化确实会轻松很多。
 image: ../assets/images/auto-pr-link-12.png
 draft: false

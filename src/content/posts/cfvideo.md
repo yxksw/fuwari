@@ -1,6 +1,6 @@
 ---
 title: 教你在Cloudflare上原生托管视频！自建YouTube！
-published: 2026-02-27T06:01:46
+published: 2026-02-26T22:01:46
 description: 你知道吗？Cloudflare上也是可以“原生”托管视频的！
 image: ../assets/images/cfvideo.png
 draft: false

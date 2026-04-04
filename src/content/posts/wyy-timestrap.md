@@ -1,6 +1,6 @@
 ---
 title: 网易云音乐歌曲时间戳获取
-published: 2025-07-27
+published: 2025-07-26T16:00:00
 description: '如果你需要歌词时间戳，且歌曲为网易云提供，那么获取它将无比简单'
 image: '../assets/images/3f73417c-f6a1-4715-bd1e-ee56a82c0ee6.webp'
 tags: [网易云音乐]

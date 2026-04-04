@@ -1,6 +1,6 @@
 ---
 title: 如何提高网站的SEO？
-published: 2025-07-30
+published: 2025-07-29T16:00:00
 description: '很多人把网站做出来之后就不再维护了，但如果你希望搜索引擎更快收录并获得更好的排名，其实还有不少细节值得优化。'
 image: '../assets/images/f334c97b-bb75-4920-8bd1-e62c9e5c675c.webp'
 tags: [SEO]

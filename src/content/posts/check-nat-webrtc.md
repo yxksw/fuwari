@@ -1,6 +1,6 @@
 ---
 title: 握草，用浏览器检测你的NAT类型？！
-published: 2026-04-04T21:46:01
+published: 2026-04-04T13:46:01
 description: 众所周知，NAT类型的检测并不是什么门槛，但是，如果我说纯浏览器也可以实现检测呢...
 image: ../assets/images/nat.png
 draft: false

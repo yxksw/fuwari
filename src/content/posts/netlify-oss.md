@@ -1,6 +1,6 @@
 ---
 title: 有自己的开源项目？来申请Netlify的Open Source计划！
-published: 2025-08-09T00:00:01
+published: 2025-08-08T16:00:01
 description: '昨天在乱翻Netlify的网站，突然发现了一个开源计划的申请入口，故申请，没想到今天就通过了😋'
 image: '../assets/images/2025-08-09-05-14-11-image.webp'
 tags: [Netlify]

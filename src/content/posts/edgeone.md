@@ -1,6 +1,6 @@
 ---
 title: 关于我折腾了一晚上 EdgeOne
-published: 2025-06-22
+published: 2025-06-21T16:00:00
 description: '本来对EdgeOne不感兴趣的，但是后来被引诱说没备案可以用国内节点，虽然好像当事者是开玩笑但是节点速度真的不错'
 image: ../assets/images/3a9096b2-cee8-448b-952a-d9f68cb01be6.webp
 tags: [EdgeOne, 优选]

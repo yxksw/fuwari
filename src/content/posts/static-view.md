@@ -1,6 +1,6 @@
 ---
 title: 静态博客也想展示文章浏览量？当然可以！
-published: 2025-06-18
+published: 2025-06-17T16:00:00
 description: '利用Umami等站点分析软件可以让管理员了解站点活跃度，但是如果我们想向用户展示一些数据呢？'
 image: ../assets/images/acacac41-e1e1-4a15-bdae-05683656916c.webp
 tags: [Cloudflare, Umami]

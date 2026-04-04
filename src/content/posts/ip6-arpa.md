@@ -1,6 +1,6 @@
 ---
 title: IPv6反解域名是什么？嫩长一坨还能托管到Cloudflare？SSL签发也没问题？
-published: 2025-08-09
+published: 2025-08-08T16:00:00
 description: '你是否见过类似 e.b.9.f.0.7.4.0.1.0.0.2.ip6.arpa 这样的域名，今天就教你搞一个！'
 image: '../assets/images/2025-08-09-04-50-44-image.webp'
 tags: [IPv6, ip6.arpa]

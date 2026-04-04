@@ -4,7 +4,7 @@ description: 一些记录，不定时更新
 draft: false
 image: https://c-p.2x.nz/h
 lang: zh_CN
-published: 1999-01-01
+published: 1998-12-31T16:00:00
 tags:
 - 记录
 title: 记录

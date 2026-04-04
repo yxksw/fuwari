@@ -4,7 +4,7 @@ description: ArchiSteamFarm是一个Steam自动挂卡工具，它可以自动识
 draft: false
 image: https://eo-r2.2x.nz/myblog/img/QmPEHve8DdVZdwxAZ26BPgbc6cDCBaKC76VVijqVoMBY2k.webp
 lang: ''
-published: 2024-12-18
+published: 2024-12-17T16:00:00
 tags:
 - Steam
 title: 使用ArchiSteamFarm进行Steam自动挂卡

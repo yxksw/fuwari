@@ -1,6 +1,6 @@
 ---
 title: 如何在直播中让你的观众实时了解你在用什么软件？
-published: 2026-03-08T03:19:43
+published: 2026-03-07T19:19:43
 description: 通过持续监测当前前台进程和指定程序的窗口标题，并将结果写入 TXT 文件，就可以让 OBS 实时向观众展示你正在使用的软件或当前播放的内容。
 image: ../assets/images/OBS-RT-PC.png
 draft: false
