@@ -650,9 +650,9 @@ onMount(async () => {
 					<div>当前会话角色：{currentUser?.role || "未读取到"}</div>
 				</div>
 			</div>
-		{:else}
+{:else}
 			<div 
-				class="transition-opacity duration-200"
+				class="space-y-6 transition-opacity duration-200"
 				class:opacity-0={!contentVisible}
 				class:opacity-100={contentVisible}
 			>
