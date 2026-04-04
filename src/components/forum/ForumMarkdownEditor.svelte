@@ -84,7 +84,9 @@ function updatePreviewClasses() {
 function setDisabledState(nextDisabled: boolean) {
 	const root = containerEl?.querySelector(".toastui-editor-defaultUI");
 	root?.classList.toggle("is-disabled", nextDisabled);
-	editor?.setDisabled(nextDisabled);
+	if (editor && typeof editor.setDisabled === "function") {
+		editor.setDisabled(nextDisabled);
+	}
 }
 
 function normalizeUploadError(error: unknown) {
