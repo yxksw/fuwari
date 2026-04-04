@@ -369,11 +369,15 @@ onMount(() => {
 				{#if user?.id}
 					<a href={`/forum/u/?id=${encodeURIComponent(user.id)}`} class="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white/70">查看我的公开主页</a>
 				{/if}
-				<a href="/forum/me/profile/" class="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white/70">个人信息</a>
+				{#if user}
+					<a href="/forum/me/profile/" class="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white/70">个人信息</a>
+				{/if}
 				{#if isAdminUser(user)}
 					<a href="/forum/admin/" class="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white/70">进入管理控制台</a>
 				{/if}
-				<button class="rounded-xl border border-red-200/20 px-4 py-3 text-sm font-bold text-red-200" on:click={submitLogout}>退出登录</button>
+				{#if user}
+					<button class="rounded-xl border border-red-200/20 px-4 py-3 text-sm font-bold text-red-200" on:click={submitLogout}>退出登录</button>
+				{/if}
 			</div>
 		</div>
 
