@@ -203,6 +203,14 @@ top-20 left-4 md:left-[unset] right-4 shadow-none rounded-2xl p-2">
     </div>
 
     {#if keywordDesktop || keywordMobile}
+        <!-- search loading -->
+        {#if isSearching}
+            <div class="flex items-center justify-center py-6">
+                <div class="w-5 h-5 border-2 border-white/20 border-t-[var(--primary)] rounded-full animate-spin"></div>
+                <span class="ml-2 text-sm text-white/50">搜索中...</span>
+            </div>
+        {/if}
+
         <!-- search results header -->
         {#if result.length > 0}
             <div class="text-xs text-white/40 px-3 py-2 border-b border-white/5">
