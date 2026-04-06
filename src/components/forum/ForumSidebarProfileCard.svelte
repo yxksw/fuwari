@@ -54,6 +54,13 @@ function handleSwupContentReplaced() {
 }
 
 onMount(() => {
+	// 只在论坛路由下才发起用户信息请求
+	const currentPath = window.location.pathname;
+	const isForumRoute = currentPath.startsWith("/forum/");
+	if (!isForumRoute) {
+		return;
+	}
+
 	const unsubscribe = forumAuth.subscribe((state) => {
 		hasToken = Boolean(state.token || forumAuth.getToken());
 		resolveUser(state.user);
