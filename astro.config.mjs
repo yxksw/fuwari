@@ -169,10 +169,6 @@ export default defineConfig({
 			destination:
 				"https://tianchi.aliyun.com/specials/promotion/freetier/esa?taskCode=25254&recordId=c856e61228828a0423417a767828d166",
 		},
-		"/s": {
-			status: 302,
-			destination: `https://${siteConfig.customDomain}/_url`,
-		},
 		"/plan": {
 			status: 302,
 			destination:
