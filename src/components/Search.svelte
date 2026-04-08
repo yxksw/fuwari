@@ -12,12 +12,15 @@ interface SearchResult {
 	snippet: string;
 }
 
-let keywordDesktop = "";
-let keywordMobile = "";
+const SEARCH_DEBOUNCE_MS = 500;
+
+let keyword = "";
 let result: SearchResult[] = [];
 let isSearching = false;
 let showLoading = false;
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
+let isComposingDesktop = false;
+let isComposingMobile = false;
 
 const searchTypes = [
 	{ id: "title", label: "标题" },
@@ -35,19 +38,11 @@ const toggleType = (typeId: string) => {
 		} else {
 			selectedTypes = [...selectedTypes, typeId];
 		}
+	} else if (selectedTypes.includes(typeId) && selectedTypes.length === 1) {
+		selectedTypes = [];
 	} else {
-		if (selectedTypes.includes(typeId) && selectedTypes.length === 1) {
-			selectedTypes = [];
-		} else {
-			selectedTypes = [typeId];
-		}
+		selectedTypes = [typeId];
 	}
-};
-
-const togglePanel = () => {
-	if (typeof document === "undefined") return;
-	const panel = document.getElementById("search-panel");
-	panel?.classList.toggle("float-panel-closed");
 };
 
 const closePanel = () => {
@@ -63,7 +58,7 @@ const openPanel = () => {
 };
 
 const reopenPanelIfHasQuery = (): void => {
-	if (keywordDesktop || keywordMobile || result.length > 0) {
+	if (keyword || result.length > 0) {
 		openPanel();
 	}
 };
@@ -80,9 +75,23 @@ const setPanelVisibility = (show: boolean): void => {
 	}
 };
 
+const removeSpaces = (value: string) => value.replace(/\s+/g, "");
+
+const sanitizeKeyword = () => {
+	keyword = removeSpaces(keyword);
+};
+
+const scheduleSearch = (keyword: string): void => {
+	openPanel();
+	result = [];
+	showLoading = true;
+	searchTimer = setTimeout(() => {
+		void search(keyword, selectedTypes);
+	}, SEARCH_DEBOUNCE_MS);
+};
+
 const search = async (
 	keyword: string,
-	isDesktop: boolean,
 	types: string[] = selectedTypes,
 ): Promise<void> => {
 	if (!keyword) {
@@ -122,24 +131,19 @@ const search = async (
 };
 
 $: {
-	if (keywordDesktop) {
-		if (searchTimer) {
-			clearTimeout(searchTimer);
-		}
-		searchTimer = setTimeout(async () => {
-			await search(keywordDesktop, true, selectedTypes);
-		}, 120);
-	} else if (keywordMobile) {
-		if (searchTimer) {
-			clearTimeout(searchTimer);
-		}
-		searchTimer = setTimeout(async () => {
-			await search(keywordMobile, false, selectedTypes);
-		}, 120);
+	if (searchTimer) {
+		clearTimeout(searchTimer);
+	}
+
+	if (isComposingDesktop || isComposingMobile) {
+		openPanel();
+		showLoading = true;
+		// 等待 compositionend 后再由新的响应式运行触发请求
+	} else if (keyword) {
+		scheduleSearch(keyword);
 	} else {
-		if (searchTimer) {
-			clearTimeout(searchTimer);
-		}
+		showLoading = false;
+		isSearching = false;
 		result = [];
 		setPanelVisibility(false);
 	}
@@ -147,34 +151,43 @@ $: {
 </script>
 
 <!-- search bar for desktop view -->
-<div id="search-bar" class="hidden lg:flex transition-all items-center h-11 mr-2 rounded-lg
+<div id="search-bar" class="hidden min-[1066px]:flex transition-all items-center h-11 mr-2 rounded-lg
       bg-white/5 hover:bg-white/10 focus-within:bg-white/10
 ">
     <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-white/30"></Icon>
-    <input placeholder="搜索" bind:value={keywordDesktop} on:focus={() => { void reopenPanelIfHasQuery(); }}
+    <input placeholder="搜索" bind:value={keyword} on:focus={() => { void reopenPanelIfHasQuery(); }}
+           on:input={sanitizeKeyword}
+           on:compositionstart={() => { isComposingDesktop = true; }}
+           on:compositionend={() => { isComposingDesktop = false; sanitizeKeyword(); }}
            class="transition-all pl-10 text-sm bg-transparent outline-0
          h-full w-40 active:w-60 focus:w-60 text-white/50"
     >
 </div>
 
 <!-- search bar for phone/tablet view -->
-<div class="relative flex h-11 flex-1 items-center rounded-lg bg-white/5 transition hover:bg-white/10 focus-within:bg-white/10 lg:hidden">
+<div id="search-bar-mobile" class="relative flex h-11 flex-1 items-center rounded-lg bg-white/5 transition hover:bg-white/10 focus-within:bg-white/10 min-[1066px]:hidden">
     <Icon icon="material-symbols:search" class="pointer-events-none absolute ml-3 text-[1.25rem] text-white/30 transition"></Icon>
-    <input placeholder="搜索" bind:value={keywordMobile} on:focus={() => { void openPanel(); }}
+    <input placeholder="搜索" bind:value={keyword} on:focus={() => { void openPanel(); }}
+           on:input={sanitizeKeyword}
+           on:compositionstart={() => { isComposingMobile = true; }}
+           on:compositionend={() => { isComposingMobile = false; sanitizeKeyword(); }}
            class="h-full w-full rounded-lg bg-transparent pl-10 pr-3 text-sm text-white/50 outline-0"
     >
 </div>
 
 <!-- search panel -->
-<div id="search-panel" class="float-panel float-panel-closed search-panel absolute md:w-[30rem]
+<div id="search-panel" class="float-panel float-panel-closed search-panel absolute z-50 md:w-[30rem]
 top-20 left-4 md:left-[unset] right-4 shadow-none rounded-2xl p-2">
 
     <!-- search bar inside panel for phone/tablet -->
-    <div id="search-bar-inside" class="hidden relative lg:hidden transition-all items-center h-11 rounded-xl
+    <div id="search-bar-inside" class="hidden relative min-[1066px]:hidden transition-all items-center h-11 rounded-xl
       bg-white/5 hover:bg-white/10 focus-within:bg-white/10
   ">
         <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-white/30"></Icon>
-        <input placeholder="搜索" bind:value={keywordMobile} on:focus={() => { void reopenPanelIfHasQuery(); }}
+        <input placeholder="搜索" bind:value={keyword} on:focus={() => { void reopenPanelIfHasQuery(); }}
+               on:input={sanitizeKeyword}
+               on:compositionstart={() => { isComposingMobile = true; }}
+               on:compositionend={() => { isComposingMobile = false; sanitizeKeyword(); }}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
                focus:w-60 text-white/50"
         >
@@ -205,7 +218,7 @@ top-20 left-4 md:left-[unset] right-4 shadow-none rounded-2xl p-2">
         {/each}
     </div>
 
-    {#if keywordDesktop || keywordMobile}
+    {#if keyword}
         <!-- search loading -->
         {#if showLoading}
             <div class="flex items-center justify-center py-6">
@@ -240,7 +253,7 @@ top-20 left-4 md:left-[unset] right-4 shadow-none rounded-2xl p-2">
             </a>
         {/each}
 
-        {#if !isSearching && result.length === 0}
+        {#if !showLoading && !isSearching && result.length === 0}
             <div class="text-sm text-white/50 px-3 py-4">
                 无搜索结果
             </div>

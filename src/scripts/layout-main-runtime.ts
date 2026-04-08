@@ -41,6 +41,8 @@ setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"]);
 setClickOutsideToClose("search-panel", [
 	"search-panel",
 	"search-bar",
+	"search-bar-mobile",
+	"search-bar-inside",
 	"search-switch",
 ]);
 
