@@ -59,6 +59,68 @@ function loadBgBlur() {
 	setHideBg(getHideBg());
 }
 
+let backgroundLoadSrc: string | null = null;
+let backgroundLoadState: "idle" | "loading" | "loaded" | "error" = "idle";
+let backgroundLoader: HTMLImageElement | null = null;
+
+function getBackgroundSrc() {
+	if (!siteConfig.background.enable) return "";
+	return siteConfig.background.src?.trim() || "";
+}
+
+function toCssUrl(src: string) {
+	return `url(${JSON.stringify(src)})`;
+}
+
+function setupBackgroundImage() {
+	const bgBox = document.getElementById("bg-box");
+	if (!bgBox) return;
+
+	const src = getBackgroundSrc();
+	if (!src) {
+		bgBox.style.backgroundImage = "none";
+		bgBox.classList.remove("loaded");
+		backgroundLoadSrc = null;
+		backgroundLoadState = "idle";
+		backgroundLoader = null;
+		return;
+	}
+
+	bgBox.style.backgroundImage = toCssUrl(src);
+
+	if (backgroundLoadSrc === src) {
+		if (backgroundLoadState === "loaded") {
+			bgBox.classList.add("loaded");
+		}
+		return;
+	}
+
+	backgroundLoadSrc = src;
+	backgroundLoadState = "loading";
+	backgroundLoader = new Image();
+	bgBox.classList.remove("loaded");
+
+	const loader = backgroundLoader;
+	const settle = (loaded: boolean) => {
+		if (backgroundLoader !== loader || backgroundLoadSrc !== src) return;
+		backgroundLoadState = loaded ? "loaded" : "error";
+		if (loaded) {
+			bgBox.classList.add("loaded");
+		} else {
+			bgBox.classList.remove("loaded");
+		}
+	};
+
+	loader.decoding = "async";
+	loader.onload = () => settle(true);
+	loader.onerror = () => settle(false);
+	loader.src = src;
+
+	if (loader.complete) {
+		settle(loader.naturalWidth > 0);
+	}
+}
+
 function showBanner() {
 	if (!siteConfig.banner.enable) return;
 
@@ -138,6 +200,7 @@ function init() {
 	loadTheme();
 	loadHue();
 	loadBgBlur();
+	setupBackgroundImage();
 	showBanner();
 	loadGiscus();
 	syncSidebarProfileMode();
@@ -239,6 +302,7 @@ const setup = () => {
 		scrollFunction();
 		loadGiscus();
 		syncSidebarProfileMode();
+		setupBackgroundImage();
 	});
 	window.swup.hooks.on("visit:end", (_visit: { to: { url: string } }) => {
 		setTimeout(() => {

@@ -294,19 +294,44 @@ const jsonLd = [
 </MainGridLayout>
 
 <style>
-    .post-container :global(img) {
+    #post-container :global(img) {
         opacity: 0;
         transition: opacity 0.5s ease-out;
     }
-    .post-container :global(img.loaded) {
+    #post-container :global(img.loaded) {
         opacity: 1;
     }
 </style>
 
 <script define:vars={{ siteConfig }}>
-    // 图片加载处理 (仅用于图片回退逻辑)
     function setupImageLoading() {
-        // 保留此函数用于将来的其他处理，或者彻底删除
+        const postContainer = document.getElementById('post-container');
+        if (!postContainer) return;
+
+        const images = postContainer.querySelectorAll('img');
+        for (const image of images) {
+            if (!(image instanceof HTMLImageElement)) continue;
+
+            const markLoaded = () => {
+                image.classList.add('loaded');
+            };
+
+            if (image.complete) {
+                markLoaded();
+                continue;
+            }
+
+            if (image.dataset.loadedHandlerBound === 'true') continue;
+
+            image.dataset.loadedHandlerBound = 'true';
+            const handleSettled = () => {
+                markLoaded();
+                delete image.dataset.loadedHandlerBound;
+            };
+
+            image.addEventListener('load', handleSettled, { once: true });
+            image.addEventListener('error', handleSettled, { once: true });
+        }
     }
 
     function setupCodeFolding() {
