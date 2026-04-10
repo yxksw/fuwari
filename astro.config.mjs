@@ -25,7 +25,6 @@ import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.m
 import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
 import { UrlCardComponent } from "./src/plugins/rehype-component-url-card.mjs";
 import rehypeImageFallback from "./src/plugins/rehype-image-fallback.mjs";
-import { rehypeImgBr } from "./src/plugins/rehype-img-br.mjs";
 import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkGithubAdmonitions } from "./src/plugins/remark-github-admonitions.js";
@@ -275,7 +274,6 @@ export default defineConfig({
 			parseDirectiveNode,
 		],
 		rehypePlugins: [
-			rehypeImgBr,
 			rehypeKatex,
 			rehypeSlug,
 			[rehypeImageFallback, imageFallbackConfig],
