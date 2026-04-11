@@ -139,6 +139,30 @@ function syncSidebarProfileMode() {
 	deepwiki?.classList.toggle("hidden", isForumRoute);
 }
 
+function loadProfileStats() {
+	const viewsElement = document.getElementById('site-views');
+	if (!viewsElement) return;
+	
+	fetch('https://t.2x.nz/share?pathname=/')
+		.then(response => {
+			if (!response.ok) return null;
+			return response.json();
+		})
+		.then(data => {
+			if (!data) return;
+			const pageviews = data.views || 0;
+			const startVal = parseInt(viewsElement.textContent) || 0;
+			if (startVal !== pageviews && typeof (window as any).animateValue === 'function') {
+				(window as any).animateValue(viewsElement, startVal, pageviews, 1000);
+			} else {
+				viewsElement.textContent = pageviews.toString();
+			}
+		})
+		.catch(error => {
+			console.error('获取全站统计失败:', error);
+		});
+}
+
 function isForumPath(pathname: string): boolean {
 	const sidebar = document.getElementById("sidebar");
 	const forumBasePath = sidebar?.getAttribute("data-forum-base-path") || "/forum/";
@@ -154,6 +178,7 @@ function init() {
 	showBanner();
 	loadGiscus();
 	syncSidebarProfileMode();
+	loadProfileStats();
 
 	new MutationObserver(() => {
 		const frame = document.querySelector<HTMLIFrameElement>(
@@ -295,6 +320,7 @@ const setup = async () => {
 		scrollFunction();
 		loadGiscus();
 		syncSidebarProfileMode();
+		loadProfileStats();
 	});
 
 	// visit:end hook - 访问结束后的清理工作
