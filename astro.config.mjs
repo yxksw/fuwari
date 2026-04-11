@@ -196,6 +196,7 @@ export default defineConfig({
 				"#swup-container",
 				"#toc",
 				"#swup-footer",
+				"#sidebar-content",
 			],
 			smoothScrolling: true,
 			cache: false,

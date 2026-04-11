@@ -211,6 +211,9 @@ const setup = async () => {
 		const currentPath = window.location.pathname;
 		const targetPath = new URL(visit.to.url, window.location.origin).pathname;
 
+		console.log('=== VISIT START ===');
+		console.log('From:', currentPath, 'To:', targetPath);
+
 		// 更新 body 的 is-home 类
 		if (pathsEqual(visit.to.url, url("/"))) {
 			bodyElement!.classList.add("lg:is-home");
@@ -237,6 +240,7 @@ const setup = async () => {
 			if (sortContainer) {
 				sortContainer.classList.add("sort-keep");
 			}
+			console.log('Scenario: Sort navigation');
 			return;
 		}
 
@@ -251,25 +255,35 @@ const setup = async () => {
 		const isTargetForum = isForumPath(targetPath);
 		const sidebarElement = document.getElementById("swup-sidebar");
 
+		console.log('isCurrentForum:', isCurrentForum, 'isTargetForum:', isTargetForum);
+
 		if (isCurrentForum || isTargetForum) {
 			// 场景2：涉及论坛的切换 - sidebar 和主容器同步动画
-			visit.containers = ["#swup-sidebar", "#sort-container", "#swup-container", "#swup-footer", "#toc"];
-			// 添加动画类，让 sidebar 参与淡入淡出
+			// 关键：替换 sidebar 的内容，而不是整个 sidebar 容器
+			visit.containers = ["#sidebar-content", "#sort-container", "#swup-container", "#swup-footer", "#toc"];
+			// 外层容器添加动画类
 			if (sidebarElement) {
 				sidebarElement.classList.add("transition-swup-fade");
+				console.log('Added transition-swup-fade to sidebar wrapper');
 			}
 		} else {
 			// 场景3：非论坛页面之间的切换 - 只有主容器动画，sidebar 不动
 			visit.containers = ["#sort-container", "#swup-container", "#swup-footer", "#toc"];
-			// 移除动画类，防止 sidebar 被 CSS 规则影响
+			// 移除动画类
 			if (sidebarElement) {
 				sidebarElement.classList.remove("transition-swup-fade");
+				console.log('Removed transition-swup-fade from sidebar wrapper');
 			}
 		}
+		
+		console.log('Containers:', visit.containers);
 	});
 
 	// page:view hook - 页面视图更新后的处理
 	window.swup.hooks.on("page:view", () => {
+		console.log('=== PAGE VIEW ===');
+		console.log('Current path:', window.location.pathname);
+		
 		const heightExtend = document.getElementById("page-height-extend");
 		if (heightExtend) {
 			heightExtend.classList.remove("hidden");
@@ -280,12 +294,16 @@ const setup = async () => {
 		const isCurrentForum = isForumPath(currentPath);
 		const sidebarElement = document.getElementById("swup-sidebar");
 		
+		console.log('Setting sidebar class for new page, isForumRoute:', isCurrentForum);
+		
 		if (isCurrentForum && sidebarElement) {
 			// 论坛页面：确保 sidebar 有动画类
 			sidebarElement.classList.add("transition-swup-fade");
+			console.log('Added transition-swup-fade to new sidebar');
 		} else if (sidebarElement) {
 			// 非论坛页面：移除动画类
 			sidebarElement.classList.remove("transition-swup-fade");
+			console.log('Removed transition-swup-fade from new sidebar');
 		}
 		
 		scrollFunction();
