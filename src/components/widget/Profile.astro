@@ -15,21 +15,21 @@ for (const post of posts) {
 }
 ---
 <div class="p-3 border-b border-white/10">
-    <div class="relative mx-auto mt-1 lg:mx-0 lg:mt-0 mb-3 max-w-[12rem] lg:max-w-none overflow-hidden" style={`--theme-hue: ${siteConfig.themeColor.hue}`}>
+    <div class="relative mx-auto mt-1 lg:mx-0 lg:mt-0 mb-3 max-w-[12rem] lg:max-w-none overflow-hidden border border-white/10" style={`--theme-hue: ${siteConfig.themeColor.hue}`}>
         <img src={config.avatar} alt="Profile Image of the Author" class="w-full h-full object-cover transition duration-500" width="640" height="640" loading="eager" decoding="async" />
     </div>
     <div class="px-2">
         <div class="font-bold text-xl text-center mb-1 text-neutral-50 transition"><h3>{config.name}</h3></div>
-        <div class="h-1 w-5 bg-[var(--primary)] mx-auto rounded-full mb-2 transition"></div>
+        <div class="h-1 w-5 bg-[var(--primary)] mx-auto mb-2 transition"></div>
         <div class="text-center text-neutral-400 mb-2.5 transition">{config.bio}</div>
         <div class="flex flex-wrap gap-2 justify-center mb-1">
             {config.links.length > 1 && config.links.map(item =>
-                    <a rel="me" aria-label={item.name} href={item.url} target="_blank" class="btn-regular rounded-lg h-10 w-10 active:scale-90">
+                    <a rel="me" aria-label={item.name} href={item.url} target="_blank" class="btn-regular h-10 w-10 active:scale-90 border border-white/10">
                         <Icon name={item.icon} class="text-[1.5rem]"></Icon>
                     </a>
             )}
             {config.links.length == 1 && <a rel="me" aria-label={config.links[0].name} href={config.links[0].url} target="_blank"
-                                            class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95">
+                                            class="btn-regular h-10 gap-2 px-3 font-bold active:scale-95 border border-white/10">
                 <Icon name={config.links[0].icon} class="text-[1.5rem]"></Icon>
                 {config.links[0].name}
             </a>}
