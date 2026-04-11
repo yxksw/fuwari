@@ -37,7 +37,8 @@ const tools = [
 		title: "零宽短链",
 		desc: "生成视觉上相同的隐形短链接",
 		href: "/s/",
-		icon: "material-symbols:link-rounded",
+		icon: "/icons/zero-width.svg",
+		isCustom: true,
 	},
 	{
 		title: "长链生成",
@@ -65,7 +66,11 @@ const tools = [
 					class="group block p-5 hover:bg-white/5 transition-all border-b border-white/10 last:border-b-0"
 				>
 					<div class="flex items-center gap-3 mb-1">
-						<Icon name={t.icon} class="w-6 h-6 text-[var(--primary)]" />
+						{t.isCustom ? (
+							<img src={t.icon} alt="" class="w-6 h-6 text-[var(--primary)]" style="filter: brightness(0) saturate(100%) invert(56%) sepia(89%) saturate(2476%) hue-rotate(191deg) brightness(101%) contrast(101%);" />
+						) : (
+							<Icon name={t.icon} class="w-6 h-6 text-[var(--primary)]" />
+						)}
 						<span class="text-lg font-bold text-75 group-hover:text-[var(--primary)] transition">{t.title}</span>
 					</div>
 					<p class="text-sm text-50 ml-9">{t.desc}</p>
