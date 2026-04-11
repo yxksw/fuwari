@@ -8,14 +8,11 @@ export function getDefaultHue(): number {
 }
 
 export function getHue(): number {
-	const stored = localStorage.getItem("hue");
-	return stored ? Number.parseInt(stored) : getDefaultHue();
+	return getDefaultHue();
 }
 
 export function setHue(hue: number, save = true): void {
-	if (save) {
-		localStorage.setItem("hue", String(hue));
-	}
+	// Do not save to localStorage, always use config value
 	document.documentElement.style.setProperty("--hue", String(hue));
 }
 
