@@ -49,8 +49,8 @@ const domains = await extractDomains();
 ---
 
 <MainGridLayout title="项目中使用的域名列表" description="列出项目中所有硬编码或引用的外部域名">
-    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
-        <div class="card-base z-10 px-9 py-6 relative w-full">
+    <div class="flex w-full overflow-hidden relative min-h-32">
+        <div class="z-10 px-9 py-6 relative w-full border-b border-white/10">
             <h1 class="text-2xl font-bold mb-4 text-[var(--primary)]">项目中使用的域名列表</h1>
             <p class="mb-6 text-sm text-black/50 dark:text-white/50">此列表在构建时自动全局扫描源代码并提取去重生成。</p>
             
