@@ -117,8 +117,8 @@ if (document.readyState === "loading") {
     void renderMermaidBlocks();
 }
 
-// Listen for Swup page transitions
-document.addEventListener("swup:contentReplaced", () => {
+// Listen for Astro page transitions
+document.addEventListener("astro:page-load", () => {
     wrapMarkdownTables();
     void renderMermaidBlocks();
 });

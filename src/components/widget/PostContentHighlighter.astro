@@ -139,8 +139,8 @@
         }
     }
 
-    // Initialize on load and swup navigation
+    // Initialize on load and astro navigation
     document.addEventListener('DOMContentLoaded', initDiffCheck);
-    document.addEventListener('swup:contentReplaced', initDiffCheck);
+    document.addEventListener('astro:page-load', initDiffCheck);
 
 </script>

@@ -41,5 +41,5 @@ const id =
 	else loadViews();
 	document.addEventListener("astro:after-swap", loadViews);
 	document.addEventListener("content:replace", loadViews);
-	document.addEventListener("swup:contentReplaced", loadViews);
+	document.addEventListener("astro:page-load", loadViews);
 </script>
