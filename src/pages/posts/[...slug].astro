@@ -352,7 +352,7 @@ const jsonLd = [
         setupPostPageEnhancements();
     }
 
-    document.addEventListener('swup:contentReplaced', setupPostPageEnhancements);
+    document.addEventListener('astro:page-load', setupPostPageEnhancements);
 </script>
 
 <style is:global>

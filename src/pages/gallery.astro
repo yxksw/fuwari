@@ -389,6 +389,6 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 
 		document.addEventListener("astro:after-swap", initIfPresent);
 		document.addEventListener("content:replace", initIfPresent);
-		document.addEventListener("swup:contentReplaced", initIfPresent);
+		document.addEventListener("astro:page-load", initIfPresent);
 	</script>
 </MainGridLayout>
