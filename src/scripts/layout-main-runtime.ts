@@ -266,6 +266,7 @@ const setup = async () => {
 		},
 	);
 	window.swup.hooks.on("page:view", () => {
+		console.log('[page:view] Event triggered, pathname:', window.location.pathname);
 		const heightExtend = document.getElementById("page-height-extend");
 		if (heightExtend) {
 			heightExtend.classList.remove("hidden");
