@@ -104,7 +104,7 @@ function loadGiscus() {
 		const val = container.getAttribute(attr);
 		if (val) script.setAttribute(attr, val);
 	});
-	script.setAttribute("data-theme", "dark");
+	script.setAttribute("data-theme", "https://2x.nz/css/giscus.css");
 	script.crossOrigin = "anonymous";
 	script.async = true;
 
