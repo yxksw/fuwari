@@ -109,5 +109,5 @@ for (const post of posts) {
     // 页面加载完成后获取统计数据
     document.addEventListener('DOMContentLoaded', loadSiteStats);
     // 监听 Swup 内容替换事件，确保页面切换后重新获取数据
-    document.addEventListener('content:replace', loadSiteStats);
+    document.addEventListener('swup:contentReplaced', loadSiteStats);
 </script>
