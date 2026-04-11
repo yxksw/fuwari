@@ -54,7 +54,7 @@ if (isLocal) {
 	img = await file();
 }
 
-const imageClass = "w-full h-full object-cover";
+const imageClass = "w-full h-full object-contain";
 const imageStyle = `object-position: ${position}`;
 const fetchPriority = loading === "eager" ? "high" : "low";
 ---
