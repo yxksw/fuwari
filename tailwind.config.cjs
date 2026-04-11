@@ -8,22 +8,7 @@ module.exports = {
 			fontFamily: {
 				sans: ["Roboto", "sans-serif", ...defaultTheme.fontFamily.sans],
 			},
-			typography: {
-				DEFAULT: {
-					css: {
-						"--tw-prose-body": null,
-						p: {
-							"margin-top": "0",
-							"margin-bottom": "0",
-						},
-					},
-				},
-			},
 		},
 	},
-	plugins: [
-		require("@tailwindcss/typography")({
-			className: "prose",
-		}),
-	],
+	plugins: [require("@tailwindcss/typography")],
 };
