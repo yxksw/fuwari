@@ -151,7 +151,7 @@ async function toggleLike() {
 				{/if}
 			</div>
 			{#if comment.isPinned}
-				<span class="inline-flex items-center gap-1 rounded-lg border border-[var(--primary)]/25 bg-[var(--primary)]/12 px-2.5 py-1 text-xs font-medium text-[var(--primary)]" title="置顶评论" aria-label="置顶评论">
+				<span class="inline-flex items-center gap-1 rounded-lg border border-[var(--primary)] bg-[var(--primary)]/12 px-2.5 py-1 text-xs font-medium text-[var(--primary)]" title="置顶评论" aria-label="置顶评论">
 					<Icon icon="material-symbols:keep-rounded" />
 					<span>置顶</span>
 				</span>

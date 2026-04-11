@@ -508,7 +508,7 @@ onMount(() => {
 				<div class="flex flex-wrap items-center justify-between gap-3 text-xs text-white/40">
 					<div class="flex flex-wrap items-center gap-3">
 						{#if post.isPinned}
-							<span class="inline-flex items-center gap-1 rounded-lg border border-[var(--primary)]/25 bg-[var(--primary)]/12 px-2.5 py-1 text-xs font-medium text-[var(--primary)]" title="置顶帖子" aria-label="置顶帖子">
+							<span class="inline-flex items-center gap-1 rounded-lg border border-[var(--primary)] bg-[var(--primary)]/12 px-2.5 py-1 text-xs font-medium text-[var(--primary)]" title="置顶帖子" aria-label="置顶帖子">
 								<Icon icon="material-symbols:keep-rounded" />
 								<span>置顶</span>
 							</span>
