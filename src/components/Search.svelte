@@ -24,6 +24,7 @@ let keyword = "";
 let result: SearchResult[] = [];
 let isSearching = false;
 let sortAsc = false;
+let allPosts: PostData[] = [];
 let isComposingDesktop = false;
 let isComposingMobile = false;
 
@@ -206,6 +207,7 @@ async function fetchAndSearch(keyword: string, types: string[]): Promise<void> {
 	openPanel();
 
 	const posts = await fetchPosts();
+	allPosts = posts;
 	result = searchPosts(posts, keyword, types);
 	setPanelVisibility(true);
 	isSearching = false;
@@ -220,6 +222,10 @@ $: {
 		result = [];
 		setPanelVisibility(false);
 	}
+}
+
+$: if (allPosts.length > 0 && keyword && sortAsc !== undefined) {
+	result = searchPosts(allPosts, keyword, selectedTypes);
 }
 </script>
 
