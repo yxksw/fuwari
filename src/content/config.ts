@@ -30,7 +30,10 @@ const specCollection: ReturnType<typeof defineCollection> = defineCollection({
 	}),
 });
 
-export const collections: { posts: typeof postsCollection; spec: typeof specCollection } = {
+export const collections: {
+	posts: typeof postsCollection;
+	spec: typeof specCollection;
+} = {
 	posts: postsCollection,
 	spec: specCollection,
 };

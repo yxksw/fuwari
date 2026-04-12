@@ -8,7 +8,10 @@ const AVATAR_IMAGE_MAX_BYTES = 200 * 1024;
 const AVATAR_IMAGE_MAX_SIZE_MB = AVATAR_IMAGE_MAX_BYTES / 1024 / 1024;
 const AVATAR_IMAGE_MAX_WIDTH_OR_HEIGHT = 512;
 
-function normalizeCompressedFile(originalFile: File, compressedFile: File): File {
+function normalizeCompressedFile(
+	originalFile: File,
+	compressedFile: File,
+): File {
 	if (compressedFile.size >= originalFile.size) {
 		return originalFile;
 	}

@@ -54,7 +54,8 @@ function createAuthStore(): ForumAuthStore {
 								session.user.displayName ||
 								state.user?.displayName ||
 								session.user.username ||
-								state.user?.username || "",
+								state.user?.username ||
+								"",
 							avatarUrl: session.user.avatarUrl || state.user?.avatarUrl,
 							email: session.user.email || state.user?.email,
 						}
@@ -73,7 +74,8 @@ function createAuthStore(): ForumAuthStore {
 			removeLocalStorage(TOKEN_STORAGE_KEY);
 			set({ user: null, token: null, loading: false, requiresTotp: false });
 		},
-		getToken: (): string | null => readLocalStorage<string | null>(TOKEN_STORAGE_KEY, null),
+		getToken: (): string | null =>
+			readLocalStorage<string | null>(TOKEN_STORAGE_KEY, null),
 	};
 }
 

@@ -2,7 +2,12 @@
 import EnvironmentSwitcher from "@/components/forum/EnvironmentSwitcher.svelte";
 import PostList from "@/components/forum/PostList.svelte";
 import { getAdminCategories } from "@/forum/api/admin";
-import { type ForumPostListQuery, getPosts, getNewPostCount, type NewPostCountResult } from "@/forum/api/posts";
+import {
+	type ForumPostListQuery,
+	getPosts,
+	getNewPostCount,
+	type NewPostCountResult,
+} from "@/forum/api/posts";
 import type { ForumCategory, ForumPostSummary } from "@/forum/types/post";
 import { forumAuth } from "@/forum/stores/auth";
 import Icon from "@iconify/svelte";

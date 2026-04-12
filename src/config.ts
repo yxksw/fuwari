@@ -169,8 +169,6 @@ export const umamiConfig: UmamiConfig = {
 	timezone: "Asia/Shanghai",
 };
 
-
-
 export const gitHubEditConfig: GitHubEditConfig = {
 	enable: true,
 	baseUrl: "https://github.com/afoim/fuwari/blob/main/src/content/posts",

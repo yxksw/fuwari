@@ -110,7 +110,9 @@ const search = async (
 			type:
 				types.length > 0 ? types.join(",") : "title,description,content,link",
 		});
-		const response = await fetch(`https://s.${siteConfig.customDomain}/?${params}`);
+		const response = await fetch(
+			`https://s.${siteConfig.customDomain}/?${params}`,
+		);
 		if (!response.ok) {
 			throw new Error("Search failed");
 		}

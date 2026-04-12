@@ -2,9 +2,9 @@
 import { onMount } from "svelte";
 
 // 零宽字符字母表：ZWSP=0, ZWNJ=1
-const ZW_CHARS = ['\u200B', '\u200C'];
+const ZW_CHARS = ["\u200B", "\u200C"];
 // 隐形参数名（用零宽字符作为参数名，更加隐形）
-const ZW_PARAM_NAME = '\u200B';
+const ZW_PARAM_NAME = "\u200B";
 
 type GeneratedLink = {
 	targetUrl: string;
@@ -31,10 +31,10 @@ function encodeUrl(url: string): string {
 	const encoder = new TextEncoder();
 	const bytes = encoder.encode(url);
 
-	let zwEncoded = '';
+	let zwEncoded = "";
 	for (const byte of bytes) {
 		// 每个字节转为 8 位二进制
-		const binary = byte.toString(2).padStart(8, '0');
+		const binary = byte.toString(2).padStart(8, "0");
 		for (const bit of binary) {
 			zwEncoded += ZW_CHARS[parseInt(bit)];
 		}
@@ -46,9 +46,9 @@ function encodeUrl(url: string): string {
  * 解码零宽字符编码的 URL（用于验证）
  */
 function decodeUrl(encoded: string): string {
-	const zwSequence = encoded.split('').filter(c => ZW_CHARS.includes(c));
+	const zwSequence = encoded.split("").filter((c) => ZW_CHARS.includes(c));
 
-	let binary = '';
+	let binary = "";
 	for (const c of zwSequence) {
 		binary += ZW_CHARS.indexOf(c).toString();
 	}
@@ -68,11 +68,11 @@ function decodeUrl(encoded: string): string {
  * 验证 URL 格式
  */
 function isValidUrl(url: string): boolean {
-	if (!url || url.trim() === '') return false;
+	if (!url || url.trim() === "") return false;
 
 	try {
 		const parsed = new URL(url);
-		return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+		return parsed.protocol === "http:" || parsed.protocol === "https:";
 	} catch {
 		return false;
 	}
@@ -108,9 +108,9 @@ function generateShortLink() {
 				targetUrl,
 				shortLink,
 				encodedPart,
-				charCount: encodedPart.length
+				charCount: encodedPart.length,
 			},
-			...generatedLinks
+			...generatedLinks,
 		];
 
 		// 清空输入
@@ -131,13 +131,13 @@ async function copyToClipboard(text: string) {
 		alert("已复制到剪贴板！");
 	} catch {
 		// 备用方案
-		const textarea = document.createElement('textarea');
+		const textarea = document.createElement("textarea");
 		textarea.value = text;
-		textarea.style.position = 'fixed';
-		textarea.style.opacity = '0';
+		textarea.style.position = "fixed";
+		textarea.style.opacity = "0";
 		document.body.appendChild(textarea);
 		textarea.select();
-		document.execCommand('copy');
+		document.execCommand("copy");
 		document.body.removeChild(textarea);
 		alert("已复制到剪贴板！");
 	}
@@ -155,8 +155,8 @@ function clearHistory() {
  */
 function visualizeZwChars(encoded: string): string {
 	return encoded
-		.replace(/\u200B/g, '○')  // ZWSP 用空心圆表示
-		.replace(/\u200C/g, '●'); // ZWNJ 用实心圆表示
+		.replace(/\u200B/g, "○") // ZWSP 用空心圆表示
+		.replace(/\u200C/g, "●"); // ZWNJ 用实心圆表示
 }
 
 /**

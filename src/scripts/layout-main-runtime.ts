@@ -113,7 +113,7 @@ function syncSidebarProfileMode() {
 	const forumProfile = document.getElementById("sidebar-profile-forum");
 	const timetable = document.getElementById("sidebar-timetable");
 	const deepwiki = document.getElementById("sidebar-deepwiki");
-	
+
 	if (!sidebar || !blogProfile || !forumProfile) return;
 
 	const forumBasePath =
@@ -136,35 +136,43 @@ function syncSidebarProfileMode() {
 }
 
 function loadProfileStats() {
-	const viewsElement = document.getElementById('site-views');
+	const viewsElement = document.getElementById("site-views");
 	if (!viewsElement) return;
-	
-	fetch('https://t.2x.nz/share?pathname=/')
-		.then(response => {
+
+	fetch("https://t.2x.nz/share?pathname=/")
+		.then((response) => {
 			if (!response.ok) return null;
 			return response.json();
 		})
-		.then(data => {
+		.then((data) => {
 			if (!data) return;
 			const pageviews = data.views || 0;
 			const startVal = parseInt(viewsElement.textContent) || 0;
-			if (startVal !== pageviews && typeof (window as any).animateValue === 'function') {
+			if (
+				startVal !== pageviews &&
+				typeof (window as any).animateValue === "function"
+			) {
 				(window as any).animateValue(viewsElement, startVal, pageviews, 1000);
 			} else {
 				viewsElement.textContent = pageviews.toString();
 			}
 		})
-		.catch(error => {
-			console.error('获取全站统计失败:', error);
+		.catch((error) => {
+			console.error("获取全站统计失败:", error);
 		});
 }
 
 function isForumPath(pathname: string): boolean {
 	const sidebar = document.getElementById("sidebar");
-	const forumBasePath = sidebar?.getAttribute("data-forum-base-path") || "/forum/";
+	const forumBasePath =
+		sidebar?.getAttribute("data-forum-base-path") || "/forum/";
 	const normalized = pathname.endsWith("/") ? pathname : `${pathname}/`;
-	const normalizedForum = forumBasePath.endsWith("/") ? forumBasePath : `${forumBasePath}/`;
-	return normalized === normalizedForum || normalized.startsWith(normalizedForum);
+	const normalizedForum = forumBasePath.endsWith("/")
+		? forumBasePath
+		: `${forumBasePath}/`;
+	return (
+		normalized === normalizedForum || normalized.startsWith(normalizedForum)
+	);
 }
 
 function init() {
@@ -193,7 +201,6 @@ function init() {
 
 init();
 bindPostInlineDiff();
-
 
 let backToTopBtn = document.getElementById("back-to-top-btn");
 let goToCommentsBtn = document.getElementById("go-to-comments-btn");
@@ -295,4 +302,3 @@ window.onresize = () => {
 		`${offset}px`,
 	);
 };
-

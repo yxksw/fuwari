@@ -94,7 +94,9 @@ export async function getAdminSettings(): Promise<ForumAdminSettings> {
 	return normalizeAdminSettings(result);
 }
 
-export function saveAdminSettings(settings: ForumAdminSettings): Promise<{ success?: boolean }> {
+export function saveAdminSettings(
+	settings: ForumAdminSettings,
+): Promise<{ success?: boolean }> {
 	return forumRequest<{ success?: boolean }>("/api/admin/settings", {
 		method: "POST",
 		requiresAuth: true,
@@ -129,7 +131,9 @@ export async function getAdminCategories(): Promise<ForumCategory[]> {
 	return categories.map(normalizeCategory);
 }
 
-export function createAdminCategory(name: string): Promise<{ success?: boolean }> {
+export function createAdminCategory(
+	name: string,
+): Promise<{ success?: boolean }> {
 	return forumRequest<{ success?: boolean }>("/api/admin/categories", {
 		method: "POST",
 		requiresAuth: true,
@@ -137,7 +141,10 @@ export function createAdminCategory(name: string): Promise<{ success?: boolean }
 	});
 }
 
-export function updateAdminCategory(id: string, name: string): Promise<{ success?: boolean }> {
+export function updateAdminCategory(
+	id: string,
+	name: string,
+): Promise<{ success?: boolean }> {
 	return forumRequest<{ success?: boolean }>(`/api/admin/categories/${id}`, {
 		method: "PUT",
 		requiresAuth: true,
@@ -145,7 +152,9 @@ export function updateAdminCategory(id: string, name: string): Promise<{ success
 	});
 }
 
-export function deleteAdminCategory(id: string): Promise<{ success?: boolean }> {
+export function deleteAdminCategory(
+	id: string,
+): Promise<{ success?: boolean }> {
 	return forumRequest<{ success?: boolean }>(`/api/admin/categories/${id}`, {
 		method: "DELETE",
 		requiresAuth: true,
@@ -177,7 +186,9 @@ function normalizeEmailTestResults(
 	return [];
 }
 
-export async function sendAdminTestEmail(options: AdminEmailTestOptions): Promise<AdminEmailTestResult[]> {
+export async function sendAdminTestEmail(
+	options: AdminEmailTestOptions,
+): Promise<AdminEmailTestResult[]> {
 	const result = await forumRequest<
 		| { results?: AdminEmailTestResult[] }
 		| AdminEmailTestResult[]
@@ -194,7 +205,9 @@ export async function sendAdminTestEmail(options: AdminEmailTestOptions): Promis
 	return normalizeEmailTestResults(result);
 }
 
-export function resendAdminUserVerification(userId: string): Promise<AdminUserActionResult> {
+export function resendAdminUserVerification(
+	userId: string,
+): Promise<AdminUserActionResult> {
 	return forumRequest<AdminUserActionResult>(
 		`/api/admin/users/${userId}/resend-verification`,
 		{
@@ -205,7 +218,9 @@ export function resendAdminUserVerification(userId: string): Promise<AdminUserAc
 	);
 }
 
-export function verifyAdminUser(userId: string): Promise<AdminUserActionResult> {
+export function verifyAdminUser(
+	userId: string,
+): Promise<AdminUserActionResult> {
 	return forumRequest<AdminUserActionResult>(
 		`/api/admin/users/${userId}/verify`,
 		{
@@ -216,7 +231,9 @@ export function verifyAdminUser(userId: string): Promise<AdminUserActionResult> 
 	);
 }
 
-export function deleteAdminUser(userId: string): Promise<AdminUserActionResult> {
+export function deleteAdminUser(
+	userId: string,
+): Promise<AdminUserActionResult> {
 	return forumRequest<AdminUserActionResult>(`/api/admin/users/${userId}`, {
 		method: "DELETE",
 		requiresAuth: true,
@@ -255,7 +272,9 @@ export function scanAdminStorageGc(): Promise<AdminStorageGcScanResult> {
 	});
 }
 
-export function cleanupAdminStorageGc(orphans?: string[]): Promise<AdminStorageGcCleanupResult> {
+export function cleanupAdminStorageGc(
+	orphans?: string[],
+): Promise<AdminStorageGcCleanupResult> {
 	return forumRequest<AdminStorageGcCleanupResult>(
 		"/api/admin/cleanup/execute",
 		{

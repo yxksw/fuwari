@@ -111,8 +111,6 @@ export type BlogPostData = {
 	nextSlug?: string;
 };
 
-
-
 export type GitHubEditConfig = {
 	enable: boolean;
 	baseUrl: string;
