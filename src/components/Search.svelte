@@ -1,7 +1,6 @@
 <script lang="ts">
 import Icon from "@iconify/svelte";
 import { url } from "@utils/url-utils.ts";
-import { siteConfig } from "../config.ts";
 
 interface SearchResult {
 	title: string;
@@ -12,13 +11,16 @@ interface SearchResult {
 	snippet: string;
 }
 
-const SEARCH_DEBOUNCE_MS = 500;
+interface PostData {
+	title: string;
+	description: string;
+	content: string;
+	link: string;
+}
 
 let keyword = "";
 let result: SearchResult[] = [];
 let isSearching = false;
-let showLoading = false;
-let searchTimer: ReturnType<typeof setTimeout> | undefined;
 let isComposingDesktop = false;
 let isComposingMobile = false;
 
@@ -81,71 +83,131 @@ const sanitizeKeyword = () => {
 	keyword = removeSpaces(keyword);
 };
 
-const scheduleSearch = (keyword: string): void => {
-	openPanel();
-	result = [];
-	showLoading = true;
-	searchTimer = setTimeout(() => {
-		void search(keyword, selectedTypes);
-	}, SEARCH_DEBOUNCE_MS);
-};
+// Fetch posts from search.json
+async function fetchPosts(): Promise<PostData[]> {
+	try {
+		const response = await fetch("/search.json", { cache: "no-store" });
+		if (!response.ok) {
+			throw new Error("Failed to fetch posts");
+		}
+		return (await response.json()) as PostData[];
+	} catch (e) {
+		console.error("Failed to fetch posts:", e);
+		return [];
+	}
+}
 
-const search = async (
+// Highlight keyword in text
+function highlightKeyword(text: string, keyword: string): string {
+	if (!text || !keyword) return text;
+	const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const regex = new RegExp(escapedKeyword, "gi");
+	return text.replace(regex, '<mark class="hl">$&</mark>');
+}
+
+// Frontend search function
+function searchPosts(
+	posts: PostData[],
 	keyword: string,
-	types: string[] = selectedTypes,
-): Promise<void> => {
+	types: string[],
+): SearchResult[] {
+	if (!keyword || posts.length === 0) return [];
+
+	const searchTypes =
+		types.length > 0 ? types : ["title", "description", "content", "link"];
+	const keywordLower = keyword.toLowerCase();
+	const results: SearchResult[] = [];
+
+	for (const post of posts) {
+		let totalScore = 0;
+		let totalHits = 0;
+		let matchedSnippet = "";
+		let matchedTitle = "";
+		let matchedInTitle = false;
+
+		for (const type of searchTypes) {
+			const field = post[type as keyof PostData];
+			if (!field) continue;
+
+			const fieldLower = field.toLowerCase();
+			const hits = (
+				fieldLower.match(
+					new RegExp(keywordLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+				) || []
+			).length;
+
+			if (hits > 0) {
+				totalHits += hits;
+				const typeScore =
+					type === "title"
+						? 10
+						: type === "description"
+							? 5
+							: type === "link"
+								? 3
+								: 1;
+				totalScore += hits * typeScore;
+
+				if (type === "title") {
+					matchedTitle = highlightKeyword(post.title, keyword);
+					matchedInTitle = true;
+				}
+
+				if (type === "content" || type === "description") {
+					const index = fieldLower.indexOf(keywordLower);
+					if (index !== -1) {
+						const start = Math.max(0, index - 40);
+						const end = Math.min(field.length, index + keyword.length + 40);
+						let snippet = field.slice(start, end);
+						if (start > 0) snippet = "..." + snippet;
+						if (end < field.length) snippet = snippet + "...";
+						snippet = highlightKeyword(snippet, keyword);
+						if (!matchedSnippet) matchedSnippet = snippet;
+					}
+				}
+			}
+		}
+
+		if (totalHits > 0) {
+			results.push({
+				title: matchedInTitle ? matchedTitle : post.title,
+				description: post.description,
+				link: post.link,
+				score: totalScore,
+				hitCount: totalHits,
+				snippet:
+					matchedSnippet ||
+					highlightKeyword(post.description.slice(0, 100), keyword),
+			});
+		}
+	}
+
+	return results.sort((a, b) => b.score - a.score);
+}
+
+// Fetch and search
+async function fetchAndSearch(keyword: string, types: string[]): Promise<void> {
 	if (!keyword) {
-		setPanelVisibility(false);
 		result = [];
+		setPanelVisibility(false);
 		return;
 	}
 
 	isSearching = true;
-	showLoading = true;
-	const startTime = Date.now();
+	openPanel();
 
-	try {
-		const params = new URLSearchParams({
-			q: keyword,
-			type:
-				types.length > 0 ? types.join(",") : "title,description,content,link",
-		});
-		const response = await fetch(
-			`https://s.${siteConfig.customDomain}/?${params}`,
-		);
-		if (!response.ok) {
-			throw new Error("Search failed");
-		}
-		result = (await response.json()) as SearchResult[];
-		setPanelVisibility(true);
-	} catch (error) {
-		console.error("Search error:", error);
-		result = [];
-		setPanelVisibility(true);
-	} finally {
-		const elapsed = Date.now() - startTime;
-		if (elapsed < 300) {
-			await new Promise((resolve) => setTimeout(resolve, 300 - elapsed));
-		}
-		isSearching = false;
-		showLoading = false;
-	}
-};
+	const posts = await fetchPosts();
+	result = searchPosts(posts, keyword, types);
+	setPanelVisibility(true);
+	isSearching = false;
+}
 
 $: {
-	if (searchTimer) {
-		clearTimeout(searchTimer);
-	}
-
 	if (isComposingDesktop || isComposingMobile) {
 		openPanel();
-		showLoading = true;
-		// 等待 compositionend 后再由新的响应式运行触发请求
 	} else if (keyword) {
-		scheduleSearch(keyword);
+		void fetchAndSearch(keyword, selectedTypes);
 	} else {
-		showLoading = false;
-		isSearching = false;
 		result = [];
 		setPanelVisibility(false);
 	}
@@ -221,18 +283,6 @@ top-20 left-4 md:left-[unset] right-4 shadow-none rounded-2xl p-2">
     </div>
 
     {#if keyword}
-        <!-- search loading -->
-        {#if showLoading}
-            <div class="flex items-center justify-center py-6">
-                <span class="text-sm text-white/50">搜索中</span>
-                <span class="loading-dots">
-                    <span class="dot">.</span>
-                    <span class="dot">.</span>
-                    <span class="dot">.</span>
-                </span>
-            </div>
-        {/if}
-
         <!-- search results header -->
         {#if result.length > 0}
             <div class="text-xs text-white/40 px-3 py-2 border-b border-white/5">
@@ -241,13 +291,12 @@ top-20 left-4 md:left-[unset] right-4 shadow-none rounded-2xl p-2">
         {/if}
 
         <!-- search results -->
-        {#each result as item}
+        {#each result as item (item.link)}
             <a href={url(`/posts/${item.link}/`)} on:click={closePanel}
-               class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
+               class="transition group block
            rounded-xl text-lg px-3 py-2 hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)]">
-                <div class="transition text-90 inline-flex font-bold group-hover:text-[var(--primary)]">
-                    {@html item.title}
-                    <Icon icon="fa6-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-[var(--primary)]"></Icon>
+                <div class="transition text-90 font-bold group-hover:text-[var(--primary)]">
+                    <span class="inline">{@html item.title}</span>
                 </div>
                 <div class="transition text-xs text-white/50 mb-1 font-mono">
                     /posts/{item.link}
@@ -259,7 +308,7 @@ top-20 left-4 md:left-[unset] right-4 shadow-none rounded-2xl p-2">
             </a>
         {/each}
 
-        {#if !showLoading && !isSearching && result.length === 0}
+        {#if result.length === 0}
             <div class="text-sm text-white/50 px-3 py-4">
                 无搜索结果
             </div>
@@ -293,45 +342,5 @@ top-20 left-4 md:left-[unset] right-4 shadow-none rounded-2xl p-2">
   .search-panel :global(mark) {
     color: var(--primary);
     background: none;
-  }
-
-  .loading-dots {
-    display: inline-block;
-    margin-left: 0;
-  }
-
-  .loading-dots .dot {
-    color: var(--primary);
-    font-size: 1.2em;
-    line-height: 1;
-    animation: dot-blink 1.4s infinite;
-    opacity: 0;
-  }
-
-  .loading-dots .dot:nth-child(1) {
-    animation-delay: 0s;
-  }
-
-  .loading-dots .dot:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-
-  .loading-dots .dot:nth-child(3) {
-    animation-delay: 0.4s;
-  }
-
-  @keyframes dot-blink {
-    0% {
-      opacity: 0;
-    }
-    20% {
-      opacity: 1;
-    }
-    40% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 0;
-    }
   }
 </style>
