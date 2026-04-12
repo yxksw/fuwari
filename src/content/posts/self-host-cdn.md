@@ -29,7 +29,7 @@ lang: ""
 ```mermaid
 flowchart TD
 
-    用户 --> |DNS解析|cdn[oraclecdn.2x.nz] --> 1[Oracle1]
+    用户 --> 2x.nz --> |DNS解析|cdn[oraclecdn.2x.nz] --> 1[Oracle1]
 
     cdn --> 2[Oracle2]
 
@@ -288,7 +288,13 @@ acme.sh --install-cert -d 2x.nz \
 
 最后配上定时任务
 
-首先写一个简单的脚本用以强制同步远程仓库的最新更改
+但是先等等！我们还需要手动拉取一次我们的博客源码。由于Github Action每次都会自动帮我们构建好，所以我们仅需拉取 `page` 分支，并且不需要拉取历史
+
+```bash
+git clone -b page --single-branch --depth=1 https://github.com/afoim/fuwari.git
+```
+
+然后写一个简单的脚本用以强制同步远程仓库的最新更改
 
 ```bash build.sh
 cd /root/fuwari
