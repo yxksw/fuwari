@@ -4,13 +4,7 @@ import { renderForumMarkdown } from "@/forum/utils/markdown";
 export let content = "";
 export let className = "";
 
-let renderedHtml = "";
-
-$: {
-	const c = content;
-	renderForumMarkdown(c).then((html) => (renderedHtml = html));
-}
-
+$: renderedHtml = renderForumMarkdown(content);
 $: classes = [
 	"custom-md prose prose-invert !max-w-none break-words text-white/75",
 	className,

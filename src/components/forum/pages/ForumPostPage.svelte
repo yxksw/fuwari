@@ -87,22 +87,16 @@ function handlePostUpdated(payload: Record<string, unknown>) {
 			"[ForumPostPage] Post update matches current post, updating content...",
 		);
 		if (post) {
-			const newContent = postPayload.content || post.content || "";
 			post = {
 				...post,
 				title: postPayload.title || post.title,
-				content: newContent,
-				excerpt: newContent,
+				content: postPayload.content || post.content,
+				excerpt: postPayload.content || post.excerpt,
 				updatedAt: postPayload.updated_at || post.updatedAt,
 				rendered: {
-					html: "",
+					html: renderForumMarkdown(postPayload.content || post.content || ""),
 				},
 			};
-			void renderForumMarkdown(newContent).then((html: string) => {
-				if (post) {
-					post.rendered = { html };
-				}
-			});
 			emitSuccessToast("帖子", "帖子内容已更新。");
 		}
 	}
@@ -178,13 +172,10 @@ async function loadPost() {
 	loadErrorMessage = "";
 	try {
 		const result = await getPost(postId);
-		const html = await renderForumMarkdown(
-			result.content || result.excerpt || "",
-		);
 		post = {
 			...result,
 			rendered: {
-				html,
+				html: renderForumMarkdown(result.content || result.excerpt || ""),
 			},
 		};
 		if (typeof document !== "undefined" && result.title) {
