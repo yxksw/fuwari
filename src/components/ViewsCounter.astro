@@ -12,40 +12,33 @@ const id =
 	Astro.props.id ?? `page-views-${pathname.replace(/[^a-zA-Z0-9]+/g, "-")}`;
 ---
 
-<div class="flex items-center">
+<div class="flex items-center" id={`${id}-wrapper`} style="display: none;">
 	<div class="meta-icon">
 		<Icon name="material-symbols:visibility-outline-rounded" class="text-xl" />
 	</div>
-	<span class="text-50 text-sm font-medium" id={id}>0 {suffix}</span>
+	<span class="text-50 text-sm font-medium" id={id}></span>
 </div>
 
 <script define:vars={{ pathname, id, suffix }}>
-	function animateValueWithSuffix(element, start, end, duration, suffix) {
-		const startTime = performance.now();
-		const animate = (currentTime) => {
-			const elapsed = currentTime - startTime;
-			const progress = Math.min(elapsed / duration, 1);
-			const value = Math.floor(start + (end - start) * progress);
-			element.textContent = `${value} ${suffix}`;
-			if (progress < 1) requestAnimationFrame(animate);
-		};
-		requestAnimationFrame(animate);
-	}
-
 	async function loadViews() {
+		const wrapper = document.getElementById(`${id}-wrapper`);
 		const el = document.getElementById(id);
-		if (!el) return;
+		if (!el || !wrapper) return;
+		
 		try {
 			const res = await fetch(
 				`https://t.2x.nz/share?pathname=${encodeURIComponent(pathname)}`,
 			);
 			if (!res.ok) return;
+			
 			const data = await res.json();
 			const views = data?.views || 0;
-			const current = Number.parseInt(el.textContent || "0", 10) || 0;
-			if (current === 0) animateValueWithSuffix(el, 0, views, 1000, suffix);
-			else el.innerHTML = `${views} ${suffix}`;
-		} catch {}
+			
+			el.textContent = `${views} ${suffix}`;
+			wrapper.style.display = 'flex';
+		} catch {
+			// 请求失败，保持隐藏
+		}
 	}
 
 	if (document.readyState === "loading")
