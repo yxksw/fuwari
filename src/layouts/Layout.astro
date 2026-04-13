@@ -197,53 +197,8 @@ const bannerOffset =
         </style>
 		<style define:vars={{
 			configHue,
-			'page-width': `${PAGE_WIDTH}rem`,
-			'bg-enable': '1',
-			'bg-position': 'center',
-			'bg-size': 'cover',
-			'bg-repeat': 'no-repeat',
-			'bg-attachment': 'fixed',
-			'bg-opacity': '0.15'
+			'page-width': `${PAGE_WIDTH}rem`
 		}}>
-			:root {
-				--bg-src: var(--bg-src);
-				--bg-enable: var(--bg-enable);
-				--bg-position: var(--bg-position);
-				--bg-size: var(--bg-size);
-				--bg-repeat: var(--bg-repeat);
-				--bg-attachment: var(--bg-attachment);
-				--bg-opacity: var(--bg-opacity);
-			}
-			
-			/* Background image configuration */
-			body {
-				--bg-src: var(--bg-src);
-				--bg-enable: var(--bg-enable);
-				--bg-position: var(--bg-position);
-				--bg-size: var(--bg-size);
-				--bg-repeat: var(--bg-repeat);
-				--bg-attachment: var(--bg-attachment);
-				--bg-opacity: var(--bg-opacity);
-			}
-
-#bg-box {
-			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			background-image: var(--bg-src);
-			background-position: var(--bg-position);
-			background-size: var(--bg-size);
-			background-repeat: var(--bg-repeat);
-			background-attachment: var(--bg-attachment);
-			opacity: calc(var(--bg-opacity) * var(--bg-enable));
-			pointer-events: none;
-			z-index: -1;
-                /* Prevent background jump on mobile browsers with dynamic URL bars */
-                will-change: transform;
-                transform: translateZ(0);
-		}
 		</style>
 
 		<!-- KaTeX CSS: async load to avoid blocking render -->
@@ -265,22 +220,7 @@ const bannerOffset =
 <BodyThirdPartyScripts />
 
 
-		<noscript>
-			<style>
-				#bg-box {
-					opacity: calc(var(--bg-opacity) * var(--bg-enable)) !important;
-				}
-			</style>
-		</noscript>
 		<AnimatedBackground />
-		<div id="bg-box"></div>
-		<script>
-			(function() {
-				const bgBox = document.getElementById("bg-box");
-				if (!bgBox) return;
-				bgBox.style.backgroundImage = "url(https://p.2x.nz/ri/h/1.webp)";
-			})();
-		</script>
 		<ConfigCarrier></ConfigCarrier>
 		<GlobalToaster client:only="svelte" />
         {showNewPostNotification && <NewPostNotification></NewPostNotification>}
