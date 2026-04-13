@@ -31,12 +31,6 @@ importers:
       '@fancyapps/ui':
         specifier: ^6.0.5
         version: 6.1.13
-      '@fontsource-variable/jetbrains-mono':
-        specifier: ^5.2.5
-        version: 5.2.8
-      '@fontsource/roboto':
-        specifier: ^5.2.5
-        version: 5.2.10
       '@google/genai':
         specifier: ^1.43.0
         version: 1.48.0
@@ -572,12 +566,6 @@ packages:
 
   '@fancyapps/ui@6.1.13':
     resolution: {integrity: sha512-C7EGAWxeTIRXZF2gznVUdMgFM3km6FUaz1S9IB+6+GWeKeIDk1tChwO60GfJE4Mi32OPfVynVIdx8wypNaK96A==}
-
-  '@fontsource-variable/jetbrains-mono@5.2.8':
-    resolution: {integrity: sha512-WBA9elru6Jdp5df2mES55wuOO0WIrn3kpXnI4+W2ek5u3ZgLS9XS4gmIlcQhiZOWEKl95meYdvK7xI+ETLCq/Q==}
-
-  '@fontsource/roboto@5.2.10':
-    resolution: {integrity: sha512-8HlA5FtSfz//oFSr2eL7GFXAiE7eIkcGOtx7tjsLKq+as702x9+GU7K95iDeWFapHC4M2hv9RrpXKRTGGBI8Zg==}
 
   '@google/genai@1.48.0':
     resolution: {integrity: sha512-plonYK4ML2PrxsRD9SeqmFt76eREWkQdPCglOA6aYDzL1AAbE+7PUnT54SvpWGfws13L0AZEqGSpL7+1IPnTxQ==}
@@ -4208,10 +4196,6 @@ snapshots:
     optional: true
 
   '@fancyapps/ui@6.1.13': {}
-
-  '@fontsource-variable/jetbrains-mono@5.2.8': {}
-
-  '@fontsource/roboto@5.2.10': {}
 
   '@google/genai@1.48.0':
     dependencies:
