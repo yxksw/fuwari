@@ -4,6 +4,7 @@ import path from "node:path";
 import { siteConfig } from "@/config";
 import FileExplorer from "@components/FileExplorer.svelte";
 import OneDriveExplorer from "@components/OneDriveExplorer.svelte";
+import ViewsCounter from "@components/ViewsCounter.astro";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { Icon } from "astro-icon/components";
 
@@ -83,11 +84,14 @@ const breadcrumbSchema = {
 <MainGridLayout title="文件">
     <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)}></script>
     <div class="p-6 md:p-8 border-b border-white/10">
-        <div class="flex items-center gap-2 mb-6">
-            <div class="h-8 w-8 rounded-lg bg-[var(--primary)] flex items-center justify-center text-black/70">
-                <Icon name="material-symbols:folder-open" class="text-[1.5rem]" />
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-6">
+            <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-lg bg-[var(--primary)] flex items-center justify-center text-black/70">
+                    <Icon name="material-symbols:folder-open" class="text-[1.5rem]" />
+                </div>
+                <h1 class="text-2xl font-bold text-white">文件索引</h1>
+                <ViewsCounter pathname="/files/" />
             </div>
-            <h1 class="text-2xl font-bold text-white">文件索引</h1>
         </div>
 
         <div class="mb-4 text-white/50 text-sm flex flex-col gap-1">
