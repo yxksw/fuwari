@@ -81,7 +81,6 @@ const getSortUrl = (type: string, descending: boolean) => {
             // Check if site has a base path (e.g. /blog/)
             // We can try to detect it from window.location or existing hrefs
             // For now assume root or relative if possible.
-            // Swup handles relative links well.
             if (t === 'date' && d) return baseUrl;
             return `${baseUrl}${t}-${d ? 'desc' : 'asc'}/`;
         };
@@ -119,7 +118,4 @@ const getSortUrl = (type: string, descending: boolean) => {
         // Order Button: toggle direction, keep current type
         orderBtn.setAttribute('href', getUrl(type, !desc));
     }
-
-    // Run on Swup page view
-    document.addEventListener('swup:page:view', updateSortControls);
 </script>

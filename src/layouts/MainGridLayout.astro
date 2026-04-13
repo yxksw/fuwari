@@ -84,29 +84,27 @@ const isForumRoute =
                 </Icon>
             </a>}
 
-            <div id="swup-sidebar" class="mb-4 row-start-2 col-span-1 lg:row-span-2 lg:row-start-1 lg:col-span-1 md:row-span-2 md:row-start-1 md:col-span-1 lg:max-w-[17.5rem] md:max-w-[17.5rem] relative">
-                <!-- 内部内容容器，由 Swup 替换 -->
+            <div id="sidebar" class="mb-4 row-start-2 col-span-1 lg:row-span-2 lg:row-start-1 lg:col-span-1 md:row-span-2 md:row-start-1 md:col-span-1 lg:max-w-[17.5rem] md:max-w-[17.5rem] relative">
                 <div id="sidebar-content">
                     <SideBar headings={headings} isForumRoute={isForumRoute}></SideBar>
                 </div>
             </div>
 
-            <main id="swup-main" class="row-start-1 col-span-1 lg:row-start-1 lg:col-start-2 lg:col-span-1 md:row-start-1 md:col-start-2 md:col-span-1 overflow-visible min-w-0">
+            <main id="main-content" class="row-start-1 col-span-1 lg:row-start-1 lg:col-start-2 lg:col-span-1 md:row-start-1 md:col-start-2 md:col-span-1 overflow-visible min-w-0">
                 <div id="content-wrapper">
                     <!-- the overflow-hidden here prevent long text break the layout-->
-                    <!-- make id different from windows.swup global property -->
                     <Announcement></Announcement>
 
                     <div id="sort-container">
                         <slot name="before-content" />
                     </div>
-                    <div id="swup-container">
+                    <div id="content-container">
                         <slot></slot>
                     </div>
                 </div>
             </main>
 
-            <div id="swup-footer" class="footer col-span-1 row-start-3 lg:col-span-1 lg:col-start-2 lg:row-start-2 md:col-span-1 md:col-start-2 md:row-start-2">
+            <div id="footer" class="footer col-span-1 row-start-3 lg:col-span-1 lg:col-start-2 lg:row-start-2 md:col-span-1 md:col-start-2 md:row-start-2">
                 <Footer></Footer>
             </div>
         </div>
@@ -131,7 +129,6 @@ const isForumRoute =
             </div>
         </div>}
 
-        <!-- #toc needs to exist for Swup to work normally -->
         {!siteConfig.toc.enable && <div id="toc"></div>}
     </div>
 </div>

@@ -138,14 +138,6 @@ const currentColor = colorMap[level] || colorMap.info;
     }
 
     initAnnouncement();
-    
-    // Use data-swup-theme to mark this script as persistent if needed, 
-    // or better yet, ensure initAnnouncement handles re-execution gracefully.
-    // Since this is an inline script in an Astro component, it re-runs on page load.
-    // But Swup might replace the body content, including this component.
-    // However, if the component persists (e.g. in a persistent layout), the script might re-run or not depending on Swup config.
-    // The issue described suggests DOM elements are being duplicated.
-    // The fix above (removing existing wrappers) handles the re-execution safely.
 </script>
 
 <style>

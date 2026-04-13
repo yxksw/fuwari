@@ -103,12 +103,7 @@ const prefix = sort ? `/${sort}` : "";
                         if (pageNum > 1) {
                             targetUrl = `${prefix}/${pageNum}/`;
                         }
-                        // Use swup if available for SPA-like transition
-                        if (window.swup) {
-                            window.swup.navigate(targetUrl);
-                        } else {
-                            window.location.href = targetUrl;
-                        }
+                        window.location.href = targetUrl;
                     } else {
                         alert('请输入有效的页码！');
                     }
