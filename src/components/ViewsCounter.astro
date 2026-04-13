@@ -20,6 +20,18 @@ const id =
 </div>
 
 <script define:vars={{ pathname, id, suffix }}>
+	function animateValueWithSuffix(element, start, end, duration, suffix) {
+		const startTime = performance.now();
+		const animate = (currentTime) => {
+			const elapsed = currentTime - startTime;
+			const progress = Math.min(elapsed / duration, 1);
+			const value = Math.floor(start + (end - start) * progress);
+			element.textContent = `${value} ${suffix}`;
+			if (progress < 1) requestAnimationFrame(animate);
+		};
+		requestAnimationFrame(animate);
+	}
+
 	async function loadViews() {
 		const el = document.getElementById(id);
 		if (!el) return;
