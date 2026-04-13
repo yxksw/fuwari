@@ -3,23 +3,22 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { Icon } from "astro-icon/components";
 
 // 自动发现所有工具页面
-const toolPages = await Astro.glob('./*.astro');
+const toolPages = await Astro.glob('./tools/**/*.astro');
 
 // 过滤并提取工具页面信息
 const tools = toolPages
 	.filter(page => {
-		// 排除特殊页面
-		const excludePages = ['tools.astro', '404.astro', 'timetable.astro', 'friends.astro', 'sponsors.astro', '[...page].astro'];
-		const fileName = page.file?.split('/').pop() || '';
-		return !excludePages.includes(fileName) && page.frontmatter?.toolMeta;
+		return page.frontmatter?.toolMeta;
 	})
 	.map(page => {
 		const meta = page.frontmatter.toolMeta;
-		const fileName = page.file?.split('/').pop()?.replace('.astro', '') || '';
+		// 从文件路径提取路由路径
+		const filePath = page.file?.split('/pages/')[1]?.replace('.astro', '') || '';
+		const routePath = filePath.replace(/\/index$/, '');
 		return {
 			title: meta.title,
 			desc: meta.description,
-			href: `/${fileName}/`,
+			href: `/${routePath}/`,
 			icon: meta.icon,
 			isCustom: meta.isCustomIcon,
 			order: meta.order || 999,
