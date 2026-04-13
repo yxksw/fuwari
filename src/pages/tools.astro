@@ -2,51 +2,30 @@
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { Icon } from "astro-icon/components";
 
-const tools = [
-	{
-		title: "画廊",
-		desc: "浏览精选图片集",
-		href: "/gallery/",
-		icon: "material-symbols:photo-library-rounded",
-	},
-	{
-		title: "文件",
-		desc: "下载公开文件资源",
-		href: "/files/",
-		icon: "material-symbols:folder-open-rounded",
-	},
-	{
-		title: "封面",
-		desc: "在线生成文章封面图",
-		href: "/cover/",
-		icon: "material-symbols:image-rounded",
-	},
-	{
-		title: "隐藏图 / 幻影图",
-		desc: "本地生成支持白底/黑底显隐效果的 PNG",
-		href: "/phantom-tank/",
-		icon: "material-symbols:layers-rounded",
-	},
-	{
-		title: "NAT 检测",
-		desc: "高级 NAT 类型及连通性探测",
-		href: "/nat-check/",
-		icon: "material-symbols:network-check-rounded",
-	},
-	{
-		title: "零宽短链",
-		desc: "生成视觉上相同的隐形短链接",
-		href: "/s/",
-		icon: "/icons/zero-width.svg",
-		isCustom: true,
-	},
-	{
-		title: "长链生成",
-		desc: "生成 i/I 字符编码的超长链接",
-		href: "/long-link/",
-		icon: "material-symbols:link-rounded",
-	},
-];
+// 自动发现所有工具页面
+const toolPages = await Astro.glob('./*.astro');
+
+// 过滤并提取工具页面信息
+const tools = toolPages
+	.filter(page => {
+		// 排除特殊页面
+		const excludePages = ['tools.astro', '404.astro', 'timetable.astro', 'friends.astro', 'sponsors.astro', '[...page].astro'];
+		const fileName = page.file?.split('/').pop() || '';
+		return !excludePages.includes(fileName) && page.frontmatter?.toolMeta;
+	})
+	.map(page => {
+		const meta = page.frontmatter.toolMeta;
+		const fileName = page.file?.split('/').pop()?.replace('.astro', '') || '';
+		return {
+			title: meta.title,
+			desc: meta.description,
+			href: `/${fileName}/`,
+			icon: meta.icon,
+			isCustom: meta.isCustomIcon,
+			order: meta.order || 999,
+		};
+	})
+	.sort((a, b) => a.order - b.order);
 ---
 
 <MainGridLayout title="工具">
@@ -60,7 +39,7 @@ const tools = [
 		</p>
 
 		<div class="space-y-0">
-			{tools.map((t, index) => (
+			{tools.map((t) => (
 				<a
 					href={t.href}
 					class="group block p-5 hover:bg-white/5 transition-all border-b border-white/10 last:border-b-0"

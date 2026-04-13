@@ -1,4 +1,11 @@
 ---
+export const toolMeta = {
+	title: "文件",
+	description: "下载公开文件资源",
+	icon: "material-symbols:folder-open-rounded",
+	order: 2,
+};
+
 import fs from "node:fs";
 import path from "node:path";
 import { siteConfig } from "@/config";
@@ -7,6 +14,7 @@ import OneDriveExplorer from "@components/OneDriveExplorer.svelte";
 import ViewsCounter from "@components/ViewsCounter.astro";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { Icon } from "astro-icon/components";
+
 
 interface FileItem {
 	name: string;
