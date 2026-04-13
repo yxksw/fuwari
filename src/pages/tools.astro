@@ -7,11 +7,9 @@ const toolPages = await Astro.glob('./tools/**/*.astro');
 
 // 过滤并提取工具页面信息
 const tools = toolPages
-	.filter(page => {
-		return page.frontmatter?.toolMeta;
-	})
+	.filter(page => page.toolMeta)
 	.map(page => {
-		const meta = page.frontmatter.toolMeta;
+		const meta = page.toolMeta;
 		// 从文件路径提取路由路径
 		const filePath = page.file?.split('/pages/')[1]?.replace('.astro', '') || '';
 		const routePath = filePath.replace(/\/index$/, '');
