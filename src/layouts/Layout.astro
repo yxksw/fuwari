@@ -1,6 +1,5 @@
 ---
-import "highlight.js/styles/github-dark.css";
-
+// Critical CSS only - non-critical CSS loaded async
 import "../styles/variables.styl";
 import "../styles/main.css";
 import "../styles/markdown.css";
@@ -25,8 +24,12 @@ import {
 import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
 import { url, pathsEqual } from "../utils/url-utils";
-// KaTeX CSS loaded asynchronously via <link> in <head> to avoid blocking render
-// import "katex/dist/katex.css";
+// Non-critical CSS loaded asynchronously in <head>
+// - highlight.js (code blocks only)
+// - KaTeX (math formulas only)
+// - fancybox (image lightbox only)
+// - GlobalToaster (toast notifications only)
+
 
 interface Props {
 	title?: string;
@@ -194,6 +197,10 @@ const bannerOffset =
 		<!-- KaTeX CSS: async load to avoid blocking render -->
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" media="print" onload="this.media='all'" />
 		<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" /></noscript>
+
+		<!-- Highlight.js CSS: async load for code blocks -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-dark.min.css" media="print" onload="this.media='all'" />
+		<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-dark.min.css" /></noscript>
 
 		<slot name="head"></slot>
 

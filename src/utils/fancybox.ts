@@ -1,5 +1,5 @@
 import { Fancybox } from "@fancyapps/ui";
-import "@fancyapps/ui/dist/fancybox/fancybox.css";
+// CSS loaded dynamically in layout-fancybox-runtime.ts
 
 const fancyboxOptions: any = {
 	hideScrollbar: false,
