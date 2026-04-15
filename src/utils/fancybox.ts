@@ -25,10 +25,6 @@ export function bindFancybox(selector: string): void {
 	Fancybox.bind(selector, fancyboxOptions);
 }
 
-export function unbindFancybox(selector: string): void {
-	Fancybox.unbind(selector);
-}
-
 export function closeFancybox(): void {
 	try {
 		Fancybox.close();
@@ -40,14 +36,6 @@ export function cleanupFancybox(): void {
 	document
 		.querySelectorAll(".fancybox__container")
 		.forEach((el) => el.remove());
-}
-
-export function restoreNativeScrollIfSafe(): void {
-	const hasFancybox = !!document.querySelector(".fancybox__container");
-	const hasCookieModal = !!document.querySelector(
-		".cc_overlay, .cc_modal, .cc_preferences, .cc_dialog, .cc_cp, .cc_nb, .cc_banner",
-	);
-	if (hasFancybox || hasCookieModal) return;
 }
 
 export { fancyboxOptions };
