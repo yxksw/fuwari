@@ -196,6 +196,16 @@ const bannerOffset =
 
 		<ClientRouter />
 
+		<style is:global>
+			::view-transition-old(root),
+			::view-transition-new(root) {
+				animation-duration: 0s;
+			}
+			::view-transition-group(root) {
+				animation-duration: 0s;
+			}
+		</style>
+
 		<slot name="head"></slot>
 
 

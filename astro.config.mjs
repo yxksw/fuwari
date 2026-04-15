@@ -91,6 +91,10 @@ export default defineConfig({
 		service: passthroughImageService(),
 	},
 	site: `https://${siteConfig.customDomain}`,
+	prefetch: {
+		prefetchAll: true,
+		defaultStrategy: "load",
+	},
 	base: "/",
 	trailingSlash: "always",
 	output: "static",
