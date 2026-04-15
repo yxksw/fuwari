@@ -52,7 +52,7 @@ const isForumRoute =
 <!-- Navbar -->
 <slot slot="head" name="head"></slot>
 <div id="top-row" class="z-50 pointer-events-none relative max-w-[var(--page-width)] px-0 md:px-4 mx-auto" class:list={[""]}>
-    <div id="navbar-wrapper" class="pointer-events-auto sticky top-0 transition-all" style="top: var(--navbar-offset, 0px);">
+    <div id="navbar-wrapper" class="pointer-events-auto sticky top-0" style="top: var(--navbar-offset, 0px);">
         <Navbar></Navbar>
     </div>
 </div>
@@ -120,7 +120,7 @@ const isForumRoute =
 <div class="absolute w-full z-0 hidden min-[1600px]:block">
     <div class="relative max-w-[var(--page-width)] mx-auto">
         <!-- TOC component -->
-        {siteConfig.toc.enable && <div id="toc-wrapper" class:list={["transition absolute top-0 -right-[var(--toc-width)] w-[var(--toc-width)] flex items-center",
+        {siteConfig.toc.enable && <div id="toc-wrapper" class:list={["absolute top-0 -right-[var(--toc-width)] w-[var(--toc-width)] flex items-center",
             {"toc-hide": siteConfig.banner.enable}]}
         >
             <div id="toc-inner-wrapper" class="fixed top-14 w-[var(--toc-width)] h-[calc(100vh_-_20rem)] overflow-y-scroll overflow-x-hidden">

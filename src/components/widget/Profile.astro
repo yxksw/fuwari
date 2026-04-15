@@ -18,13 +18,13 @@ for (const post of posts) {
 <div class="p-3 border-b border-white/10">
     <div id="profile-avatar-container" class="relative mx-auto lg:mx-0 mb-3 max-w-[12rem] md:max-w-[16rem] lg:max-w-none">
         <div id="profile-avatar-wrapper" class="relative border border-white/10" style={`--theme-hue: ${siteConfig.themeColor.hue}`}>
-            <img src={config.avatar} alt="Profile Image of the Author" class="w-full h-full object-cover transition duration-500" width="640" height="640" loading="eager" decoding="async" />
+            <img src={config.avatar} alt="Profile Image of the Author" class="w-full h-full object-cover" width="640" height="640" loading="eager" decoding="async" />
         </div>
     </div>
     <div class="px-2">
-        <div class="font-bold text-xl text-center mb-1 text-neutral-50 transition"><h3>{config.name}</h3></div>
-        <div class="h-1 w-5 bg-[var(--primary)] mx-auto mb-2 transition"></div>
-        <div class="text-center text-neutral-400 mb-2.5 transition">{config.bio}</div>
+        <div class="font-bold text-xl text-center mb-1 text-neutral-50"><h3>{config.name}</h3></div>
+        <div class="h-1 w-5 bg-[var(--primary)] mx-auto mb-2"></div>
+        <div class="text-center text-neutral-400 mb-2.5">{config.bio}</div>
         <div class="flex flex-wrap gap-2 justify-center mb-1">
             {config.links.length > 1 && config.links.map(item =>
                     <a rel="me" aria-label={item.name} href={item.url} target="_blank" class="btn-regular h-10 w-10 active:scale-90 border border-white/10">
@@ -86,10 +86,8 @@ for (const post of posts) {
 
 <style>
     .loading-bar {
-        transition: opacity 0.5s ease-out;
     }
     
-    /* 直播状态头像效果 */
     #profile-avatar-wrapper.live-avatar-ring {
         border-color: #ef4444 !important;
         border-width: 3px;
@@ -102,21 +100,8 @@ for (const post of posts) {
         inset: -3px;
         border: 3px solid #ef4444;
         pointer-events: none;
-        animation: live-ring-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
     
-    @keyframes live-ring-pulse {
-        0% {
-            transform: scale(1);
-            opacity: 1;
-        }
-        100% {
-            transform: scale(1.15);
-            opacity: 0;
-        }
-    }
-    
-    /* 直播链接包裹器 */
     :global(.live-link-wrapper) {
         display: flex;
         flex-direction: column;
@@ -125,7 +110,6 @@ for (const post of posts) {
         cursor: pointer;
     }
     
-    /* 直播中文字覆盖 */
     :global(.live-badge) {
         text-align: center;
         margin-top: 8px;
