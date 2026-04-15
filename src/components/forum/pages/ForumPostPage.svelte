@@ -283,7 +283,7 @@ async function submitComment(parentId?: string) {
 		}
 		await loadComments();
 		commentStatus = "";
-		emitSuccessToast("评论", isReply ? "回复成功。" : "评论成功。");
+		emitSuccessToast("评论", isReply ? "回复成功。" : "评论成功。", true);
 	} catch (error) {
 		const errorMsg =
 			error instanceof Error
