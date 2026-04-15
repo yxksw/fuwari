@@ -14,11 +14,11 @@ const payloadText = encodeURIComponent(
 );
 ---
 
-	<div class:list={["border border-white/10 bg-[var(--card-bg)] px-4 py-3", className]} data-live-status-root data-live-payload={payloadText}>
-	<p data-live-status class="text-sm font-semibold text-white">状态计算中...</p>
+	<div class:list={["border border-white/10 bg-[var(--card-bg)] px-4 py-3 opacity-0 transition-opacity duration-300", className]} data-live-status-root data-live-payload={payloadText}>
+	<p data-live-status class="text-sm font-semibold text-white"></p>
 	<p class="mt-1 text-sm text-white/80">
 		<span>下一堂课：</span>
-		<span data-live-next-detail class="font-medium">--</span>
+		<span data-live-next-detail class="font-medium"></span>
 		<span data-live-next-tail></span>
 	</p>
 </div>
@@ -151,6 +151,9 @@ const payloadText = encodeURIComponent(
 		nextDetailElement.textContent = state.nextDetail;
 		nextTailElement.textContent = state.nextTail;
 		nextDetailElement.style.color = state.nextColor || "";
+		
+		// 显示组件（数据已加载完成）
+		root.style.opacity = "1";
 	}
 
 	function refreshLiveStatusWidgets() {
