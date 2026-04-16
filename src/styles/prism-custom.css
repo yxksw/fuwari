@@ -1,0 +1,23 @@
+/* Prism.js 自定义样式修复 */
+
+/* 修复中括号等标点符号被强制换行的问题 */
+.token {
+	display: inline !important;
+}
+
+.token.punctuation {
+	display: inline !important;
+}
+
+/* 确保代码块内容正常换行 */
+pre[class*="language-"] {
+	white-space: pre;
+	word-break: normal;
+	word-wrap: normal;
+	overflow-wrap: normal;
+}
+
+/* 确保行内代码正常显示 */
+:not(pre) > code[class*="language-"] {
+	white-space: pre-wrap;
+}
