@@ -88,7 +88,14 @@ function remarkSpoiler() {
 // https://astro.build/config
 export default defineConfig({
 	image: {
-		service: passthroughImageService(),
+		service: {
+			entrypoint: "astro/assets/services/sharp",
+			config: {
+				limitInputPixels: false,
+			},
+		},
+		domains: ["cdn.2x.nz", "pic.2x.nz"],
+		remotePatterns: [{ protocol: "https" }],
 	},
 	site: `https://${siteConfig.customDomain}`,
 	prefetch: {

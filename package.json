@@ -20,8 +20,7 @@
 		"watermark": "node scripts/add-watermark.js",
 		"ai-summary": "node scripts/generate-ai-summary.js",
 		"format": "biome format --write ./src",
-		"lint": "biome check --write ./src",
-		"postinstall": "patch-package"
+		"lint": "biome check --write ./src"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.8",
@@ -58,6 +57,7 @@
 		"remark-directive-rehype": "^0.4.2",
 		"remark-math": "^6.0.0",
 		"remark-sectionize": "^2.1.0",
+		"sharp": "^0.34.5",
 		"svelte": "^5.28.2",
 		"tailwindcss": "^3.4.17"
 	},
@@ -88,10 +88,5 @@
 		"typescript": "^5.8.3",
 		"unist-util-visit": "^5.0.0"
 	},
-	"packageManager": "pnpm@9.14.4",
-	"pnpm": {
-		"patchedDependencies": {
-			"astro": "patches/astro.patch"
-		}
-	}
+	"packageManager": "pnpm@9.14.4"
 }
