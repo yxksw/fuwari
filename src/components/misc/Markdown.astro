@@ -44,46 +44,100 @@ const loadMermaid = async () => {
 };
 
 const transformMermaidBlocks = () => {
-    document.querySelectorAll(".custom-md pre").forEach((pre) => {
-        if ((pre as HTMLElement).dataset.mermaidProcessed === "true") return;
+    console.log("[Mermaid Debug] 开始转换 mermaid 代码块");
+    const allPres = document.querySelectorAll(".custom-md pre");
+    console.log("[Mermaid Debug] 找到的 pre 元素数量:", allPres.length);
+    
+    allPres.forEach((pre, index) => {
+        console.log(`[Mermaid Debug] 处理第 ${index + 1} 个 pre 元素`);
+        
+        if ((pre as HTMLElement).dataset.mermaidProcessed === "true") {
+            console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 已处理过，跳过`);
+            return;
+        }
+        
         const code = pre.querySelector("code");
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 的 code 元素:`, code);
+        
         const langSources = [
             code?.getAttribute("data-language"),
             pre.getAttribute("data-language"),
             pre.closest("[data-language]")?.getAttribute("data-language"),
         ];
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 的语言来源:`, langSources);
+        
         const className = `${pre.className || ""} ${code?.className || ""}`;
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 的 className:`, className);
+        
         const lang = (langSources.find(Boolean) || "").toLowerCase();
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 的语言:`, lang);
+        
         const isMermaid = className.includes("language-mermaid") || lang === "mermaid";
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 是否为 mermaid:`, isMermaid);
+        
         if (!isMermaid) return;
 
         // 使用 innerText 而不是 textContent 来正确处理 HTML 实体
+        const codeElements = code ? Array.from(code.querySelectorAll(".code:not(summary *)")) : [];
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 的 .code 元素数量:`, codeElements.length);
+        
         const sourceByLines = code
-            ? Array.from(code.querySelectorAll(".code:not(summary *)"))
+            ? codeElements
                 .map((el) => (el as HTMLElement).innerText || el.textContent)
                 .map((text) => (text === "\n" ? "" : text))
                 .join("\n")
                 .trim()
             : "";
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 的 sourceByLines:`, sourceByLines);
+        
         const source = sourceByLines || (code as HTMLElement)?.innerText?.trim() || code?.textContent?.trim();
-        if (!source) return;
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 的最终 source:`, source);
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 的 source 长度:`, source?.length);
+        
+        if (!source) {
+            console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 的 source 为空，跳过`);
+            return;
+        }
 
         const container = document.createElement("div");
         container.className = "mermaid";
         container.textContent = source;
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 创建的 mermaid 容器:`, container);
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 的 mermaid 容器内容:`, container.textContent);
+        
         (pre as HTMLElement).dataset.mermaidProcessed = "true";
         pre.replaceWith(container);
+        console.log(`[Mermaid Debug] 第 ${index + 1} 个 pre 已替换为 mermaid 容器`);
     });
+    
+    console.log("[Mermaid Debug] mermaid 代码块转换完成");
 };
 
 const renderMermaidBlocks = async () => {
+    console.log("[Mermaid Debug] 开始渲染 mermaid 图表");
     transformMermaidBlocks();
+    
     const mermaidNodes = document.querySelectorAll(".custom-md .mermaid");
-    if (!mermaidNodes.length) return;
+    console.log("[Mermaid Debug] 找到的 .mermaid 元素数量:", mermaidNodes.length);
+    
+    if (!mermaidNodes.length) {
+        console.log("[Mermaid Debug] 没有找到 mermaid 元素，结束渲染");
+        return;
+    }
+    
+    console.log("[Mermaid Debug] 开始加载 mermaid 库");
     const mermaid = await loadMermaid();
-    await mermaid.run({
-        nodes: Array.from(mermaidNodes),
-    });
+    console.log("[Mermaid Debug] mermaid 库加载完成:", mermaid);
+    
+    try {
+        console.log("[Mermaid Debug] 开始执行 mermaid.run()");
+        await mermaid.run({
+            nodes: Array.from(mermaidNodes),
+        });
+        console.log("[Mermaid Debug] mermaid.run() 执行成功");
+    } catch (error) {
+        console.error("[Mermaid Debug] mermaid.run() 执行失败:", error);
+    }
 };
 
 const wrapMarkdownTables = () => {
