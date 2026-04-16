@@ -1528,17 +1528,6 @@ function downloadLink(url: string, filename: string) {
         border-color: var(--primary);
     }
 
-    :global(input[type="checkbox"]:checked::after) {
-        content: "";
-        position: absolute;
-        left: 2px;
-        top: 2px;
-        width: 8px;
-        height: 8px;
-        background-color: white;
-        border-radius: 0;
-    }
-
     :global(input[type="checkbox"]:focus) {
         outline: none;
         box-shadow: 0 0 0 2px var(--btn-plain-bg-hover);
