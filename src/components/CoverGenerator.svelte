@@ -1509,12 +1509,17 @@ function downloadLink(url: string, filename: string) {
         appearance: none;
         width: 16px;
         height: 16px;
+        min-width: 16px;
+        min-height: 16px;
         border: 2px solid rgba(255, 255, 255, 0.3);
         border-radius: 0;
         background-color: transparent;
         cursor: pointer;
         position: relative;
         transition: all 0.2s ease;
+        display: inline-block;
+        vertical-align: middle;
+        flex-shrink: 0;
     }
 
     :global(input[type="checkbox"]:checked) {
@@ -1525,8 +1530,9 @@ function downloadLink(url: string, filename: string) {
     :global(input[type="checkbox"]:checked::after) {
         content: "";
         position: absolute;
-        left: 3px;
-        top: 3px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
         width: 8px;
         height: 8px;
         background-color: white;
