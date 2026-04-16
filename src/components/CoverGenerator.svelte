@@ -1386,21 +1386,21 @@ function downloadLink(url: string, filename: string) {
         background: rgba(255, 255, 255, 0.1);
         outline: none;
         cursor: pointer;
-        border-radius: 2px;
+        border-radius: 0;
     }
 
     :global(.square-range::-webkit-slider-track) {
         width: 100%;
         height: 6px;
         background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
+        border-radius: 0;
     }
 
     :global(.square-range::-moz-range-track) {
         width: 100%;
         height: 6px;
         background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
+        border-radius: 0;
     }
 
     :global(.square-range::-webkit-slider-thumb) {
@@ -1408,9 +1408,9 @@ function downloadLink(url: string, filename: string) {
         appearance: none;
         width: 18px;
         height: 18px;
-        background: #59A0F9;
+        background: var(--primary);
         cursor: pointer;
-        border-radius: 3px;
+        border-radius: 0;
         border: 2px solid rgba(255, 255, 255, 0.2);
         transition: all 0.2s ease;
     }
@@ -1418,30 +1418,30 @@ function downloadLink(url: string, filename: string) {
     :global(.square-range::-moz-range-thumb) {
         width: 18px;
         height: 18px;
-        background: #59A0F9;
+        background: var(--primary);
         cursor: pointer;
-        border-radius: 3px;
+        border-radius: 0;
         border: 2px solid rgba(255, 255, 255, 0.2);
         transition: all 0.2s ease;
     }
 
     :global(.square-range:hover::-webkit-slider-thumb) {
-        background: #6FB0FF;
-        box-shadow: 0 0 8px rgba(89, 160, 249, 0.5);
+        background: var(--btn-regular-bg-hover);
+        box-shadow: 0 0 8px var(--primary);
     }
 
     :global(.square-range:hover::-moz-range-thumb) {
-        background: #6FB0FF;
-        box-shadow: 0 0 8px rgba(89, 160, 249, 0.5);
+        background: var(--btn-regular-bg-hover);
+        box-shadow: 0 0 8px var(--primary);
     }
 
     :global(.square-range:active::-webkit-slider-thumb) {
-        background: #85C0FF;
+        background: var(--btn-regular-bg-active);
         transform: scale(1.1);
     }
 
     :global(.square-range:active::-moz-range-thumb) {
-        background: #85C0FF;
+        background: var(--btn-regular-bg-active);
         transform: scale(1.1);
     }
 
@@ -1468,7 +1468,7 @@ function downloadLink(url: string, filename: string) {
         bottom: 0;
         background-color: rgba(255, 255, 255, 0.1);
         transition: 0.3s;
-        border-radius: 3px;
+        border-radius: 0;
         border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
@@ -1481,17 +1481,17 @@ function downloadLink(url: string, filename: string) {
         bottom: 2px;
         background-color: white;
         transition: 0.3s;
-        border-radius: 2px;
+        border-radius: 0;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     :global(.square-toggle input:checked + .square-toggle-slider) {
-        background-color: #59A0F9;
-        border-color: #59A0F9;
+        background-color: var(--primary);
+        border-color: var(--primary);
     }
 
     :global(.square-toggle input:focus + .square-toggle-slider) {
-        box-shadow: 0 0 0 2px rgba(89, 160, 249, 0.3);
+        box-shadow: 0 0 0 2px var(--btn-plain-bg-hover);
     }
 
     :global(.square-toggle input:checked + .square-toggle-slider:before) {
@@ -1503,7 +1503,7 @@ function downloadLink(url: string, filename: string) {
     }
 
     :global(.square-toggle input:checked:hover + .square-toggle-slider) {
-        background-color: #6FB0FF;
+        background-color: var(--btn-regular-bg-hover);
     }
 
     .input-field {
