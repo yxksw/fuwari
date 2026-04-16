@@ -260,6 +260,32 @@ export default defineConfig({
 		],
 	},
 	vite: {
+		optimizeDeps: {
+			include: [
+				"markdown-it",
+				"prismjs",
+				"prismjs/components/prism-bash",
+				"prismjs/components/prism-typescript",
+				"prismjs/components/prism-javascript",
+				"prismjs/components/prism-python",
+				"prismjs/components/prism-json",
+				"prismjs/components/prism-yaml",
+				"prismjs/components/prism-toml",
+				"prismjs/components/prism-markdown",
+				"prismjs/components/prism-css",
+				"prismjs/components/prism-scss",
+				"prismjs/components/prism-sql",
+				"prismjs/components/prism-docker",
+				"prismjs/components/prism-nginx",
+				"prismjs/components/prism-go",
+				"prismjs/components/prism-rust",
+				"prismjs/components/prism-java",
+				"prismjs/components/prism-c",
+				"prismjs/components/prism-cpp",
+				"prismjs/components/prism-csharp",
+				"prismjs/components/prism-php",
+			],
+		},
 		resolve: {
 			alias: [
 				{
