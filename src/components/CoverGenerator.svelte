@@ -1263,6 +1263,35 @@ function downloadLink(url: string, filename: string) {
             </div>
         </div>
 
+        <!-- Scale Ratios -->
+        {#if exportConfig.format === 'png'}
+            <div class="flex flex-col gap-3">
+                <label class="text-sm font-bold text-gray-300">缩放倍率 (多选)</label>
+                <div class="grid grid-cols-2 gap-2">
+                    {#each [1, 2, 3, 4] as scale}
+                        <label class="flex items-center gap-2 p-2 border border-[var(--line-color)] rounded-lg cursor-pointer hover:bg-[var(--btn-regular-bg)] transition-colors select-none">
+                            <input 
+                                type="checkbox" 
+                                class="accent-[var(--primary)] w-4 h-4"
+                                checked={exportConfig.scales.includes(scale)} 
+                                on:change={(e) => {
+                                    if (e.currentTarget.checked) {
+                                        exportConfig.scales = [...exportConfig.scales, scale].sort();
+                                    } else {
+                                        exportConfig.scales = exportConfig.scales.filter(s => s !== scale);
+                                    }
+                                }}
+                            />
+                            <span class="text-sm font-mono text-gray-300">{scale}x</span>
+                        </label>
+                    {/each}
+                </div>
+                <p class="text-[10px] text-gray-400 text-right -mt-1">
+                    {Math.round(canvasWidth)}x{Math.round(canvasHeight)} px
+                </p>
+            </div>
+        {/if}
+
         <!-- Export -->
         <div class="bg-transparent rounded-lg p-4 space-y-4 border border-[var(--line-color)]">
             <h4 class="text-sm font-bold text-gray-300">导出设置</h4>
@@ -1286,35 +1315,6 @@ function downloadLink(url: string, filename: string) {
                         </label>
                     </div>
                 </div>
-
-                {#if exportConfig.format === 'png'}
-                    <div class="flex flex-col gap-1">
-                        <div class="flex justify-between text-xs text-gray-400">
-                            <label>缩放倍率</label>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-2 p-2 border border-[var(--line-color)] rounded-lg">
-                            {#each [1, 2, 3, 4] as scale}
-                                <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer transition-all text-xs {exportConfig.scales.includes(scale) ? 'border-[var(--primary)] bg-[var(--primary)]/5 text-[var(--primary)]' : 'border-[var(--line-color)] bg-transparent text-gray-300'}">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={exportConfig.scales.includes(scale)} 
-                                        on:change={(e) => {
-                                            if (e.currentTarget.checked) {
-                                                exportConfig.scales = [...exportConfig.scales, scale].sort();
-                                            } else {
-                                                exportConfig.scales = exportConfig.scales.filter(s => s !== scale);
-                                            }
-                                        }}
-                                    />
-                                    <span class="font-mono font-bold">{scale}x</span>
-                                </label>
-                            {/each}
-                        </div>
-                        <p class="text-[10px] text-gray-400 text-right mt-0.5">
-                            {Math.round(canvasWidth)}x{Math.round(canvasHeight)} px
-                        </p>
-                    </div>
-                {/if}
 
                 <label class="flex items-center justify-between p-2 bg-transparent rounded border border-[var(--line-color)] cursor-pointer">
                     <span class="text-xs font-bold text-gray-300">背景透明</span>
