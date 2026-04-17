@@ -136,18 +136,10 @@ for (const post of posts) {
         const viewsElement = document.getElementById('site-views');
         if (!wrapper || !viewsElement) return;
         
-        try {
-            const response = await fetch('https://t.2x.nz/share?pathname=/');
-            if (!response.ok) return;
-            
-            const data = await response.json();
-            const pageviews = data.views || 0;
-            
-            viewsElement.textContent = pageviews.toString();
+        // 直接从批量请求的全局变量读取
+        if (window.__SITE_VIEWS__ !== undefined) {
+            viewsElement.textContent = window.__SITE_VIEWS__.toString();
             wrapper.style.display = 'grid';
-        } catch (error) {
-            // 请求失败，保持隐藏
-            console.error('Failed to load site stats:', error);
         }
     }
 
