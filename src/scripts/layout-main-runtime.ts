@@ -140,11 +140,17 @@ function loadProfileStats() {
 		return;
 	}
 
-	// 直接从批量请求的全局变量读取
-	if ((window as any).__SITE_VIEWS__ !== undefined) {
-		viewsElement.textContent = (window as any).__SITE_VIEWS__.toString();
-		if (wrapper) wrapper.style.display = "grid";
-	}
+	// 直接从批量请求的全局变量读取，如果还没准备好就等待
+	const checkAndDisplay = () => {
+		if ((window as any).__SITE_VIEWS__ !== undefined) {
+			viewsElement.textContent = (window as any).__SITE_VIEWS__.toString();
+			if (wrapper) wrapper.style.display = "grid";
+		} else {
+			// 如果数据还没准备好，等待一下再检查
+			setTimeout(checkAndDisplay, 100);
+		}
+	};
+	checkAndDisplay();
 }
 
 function init() {
