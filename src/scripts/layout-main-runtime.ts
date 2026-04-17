@@ -140,40 +140,11 @@ function loadProfileStats() {
 		return;
 	}
 
-	// 如果文章列表排序脚本已经加载了全站访问量，直接使用
+	// 直接从批量请求的全局变量读取
 	if ((window as any).__SITE_VIEWS__ !== undefined) {
 		viewsElement.textContent = (window as any).__SITE_VIEWS__.toString();
 		if (wrapper) wrapper.style.display = "grid";
-		return;
 	}
-
-	// 如果标记已设置但值还没准备好，等待一下
-	if ((window as any).__SITE_VIEWS_LOADED__) {
-		const checkInterval = setInterval(() => {
-			if ((window as any).__SITE_VIEWS__ !== undefined) {
-				clearInterval(checkInterval);
-				viewsElement.textContent = (window as any).__SITE_VIEWS__.toString();
-				if (wrapper) wrapper.style.display = "grid";
-			}
-		}, 50);
-		return;
-	}
-
-	// 否则发起单独请求（非文章列表页）
-	fetch("https://t.2x.nz/share?pathname=/")
-		.then((response) => {
-			if (!response.ok) return null;
-			return response.json();
-		})
-		.then((data) => {
-			if (!data) return;
-			const pageviews = data.views || 0;
-			viewsElement.textContent = pageviews.toString();
-			if (wrapper) wrapper.style.display = "grid";
-		})
-		.catch((error) => {
-			console.error("获取全站统计失败:", error);
-		});
 }
 
 function init() {
