@@ -1,8 +1,8 @@
 ---
 title: 俗话都说项目写久了会变成史山...今天我们来铲史...
 published: 2026-04-19T10:05:45
-description: ""
-image: ""
+description: 什么？我只想改一个字看看预览都要等1分钟？这是什么神人项目啊？！
+image: assets/images/astro.png
 draft: false
 lang: ""
 ---
@@ -28,7 +28,7 @@ lang: ""
 
 那么我们就需要使用 `--verbose` 标志，来事无巨细的获取开发服务器究竟被什么东西卡了这么久
 
-$图片
+![](assets/images/improve-dev-speed-6.png)
 
 显然，我们会发现 Astro 在 Vite 准备就绪后就开始加载schema了，最典型的就是图片，由于图片在 `/src/content/assets` 下，Astro会将其当作内容集合去处理，而我们的项目总共有 **1000+** 图片，这会导致所有图片都会走一遍Astro的处理，哪怕我们在 `astro.config.mjs` 声明了 [no-op 透传](https://docs.astro.build/zh-cn/guides/images/#%E9%85%8D%E7%BD%AE-no-op-%E9%80%8F%E4%BC%A0%E6%9C%8D%E5%8A%A1)
 ```js
@@ -70,4 +70,44 @@ flowchart TD
 
 但是，经过实测，我们发现 Obsidian 对此的支持并不全，最终纯原版我们只能粘贴出 `public/assets/images/1.webp` 这样的内容，这会导致浏览器错误拼接为 `/{当前pathname}/public/assets/images/1.webp` ，最终找不到图片
 
-所以我们需要打一个插件，我选择直接魔改我正在用的 **Paste image rename
+所以我们需要打一个插件，我选择直接魔改我正在用的 **Paste image rename** 插件，让他在重命名的时候自动把 `public` 删除
+
+![](assets/images/improve-dev-speed.png)
+直接将 https://github.com/afoim/obsidian-paste-image-rename/blob/master/dist/main.js 替换 `\.obsidian\plugins\obsidian-paste-image-rename\main.js` 即可
+
+首先配置 Obsidian 的原始行为
+
+![](assets/images/improve-dev-speed-1.png)
+
+确保插件启用
+
+![](assets/images/improve-dev-speed-2.png)
+
+![](assets/images/Obsidian_Yjv7ZJeIVs.gif)
+
+之后，Astro 将不会碰我们的图片，我们也能一如往常地去写作
+
+至此，图片优化算是做完了，但是好像有哪里还是不对
+
+还记得一开始的 `astro-icon` 加载日志吗
+```sql
+16:40:06 [astro-icon] Loaded icons from public/icons, fa6-brands, fa6-regular, fa6-solid, material-symbols, material-symbols-light, mingcute, simple-icons
+```
+
+仔细想一下，图标为什么需要我们自己托管呢，无论是NPM还是各种图标站，使用CDN引入都是一个不错的做法
+
+于是，接下来我们将整个图标库连根拔起，并使用 https://api.iconify.design/ CDN来引入图标
+
+至此，dev的优化算是告一段落了，但在我们优化开发服务器的性能时，顺便修了一个小问题
+
+之前，对于桌面端的用户，我们会使用流星背景。但实际测试发现由于流星是随机出现且同屏高达 **50个**，这会导致高达 **3000次/秒** 的布局重绘， 所以我们顺便将整个流星背景移除，仅保留一个有质感的静态渐变
+
+![](assets/images/improve-dev-speed-7.png)
+
+最终，开发服务器的启动快如闪电！**仅需7秒** 
+
+![](assets/images/Kiro_NcMc9NkpG3.gif)
+
+而之前...这也太慢了... **近乎1分钟** 
+
+![](assets/images/Kiro_tYIjKYtTlP.gif)
