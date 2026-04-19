@@ -8,9 +8,9 @@ import {
 	listFiles,
 } from "./utils/content-files.js";
 
-const OLD_PATH = "../assets/images/";
+const OLD_PATH = "/assets/images//";
 const NEW_PATH =
-	"https://cnb.cool/2x.nz/fuwari/-/git/raw/main/src/content/assets/images/";
+	"https://cnb.cool/2x.nz/fuwari/-/git/raw/main//assets/images//";
 
 async function getAllMarkdownFiles() {
 	try {
