@@ -29,15 +29,15 @@ lang: ""
 
 图源全部存在 **Cloudflare R2**，全部采用 **Webp** 格式，仅分类为 **横屏、竖屏** ，如图
 
-![](/assets/images//2025-08-31-04-13-08-image.webp)
+![](/assets/images/2025-08-31-04-13-08-image.webp)
 
-![](/assets/images//2025-08-31-04-13-17-image.webp)
+![](/assets/images/2025-08-31-04-13-17-image.webp)
 
 API就拿我正投入使用的 https://eopfapi.acofork.com/pic?img=ua 来说
 
 看域名也可以看出来，这是一个 **EdgeOne Pages Functions** 服务（下文简称 **eopf** ），什么？你问为什么用这个？那当然是因为！ **目前所有功能完全免费！**
 
-![](/assets/images//2025-08-31-04-18-45-image.webp)
+![](/assets/images/2025-08-31-04-18-45-image.webp)
 
 源码在 [afoim/EdgeOne_Function_PicAPI: 适用于EdgeOne边缘函数的随机图API](https://github.com/afoim/EdgeOne_Function_PicAPI)
 
