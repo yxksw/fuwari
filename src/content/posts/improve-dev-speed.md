@@ -2,7 +2,7 @@
 title: 俗话都说项目写久了会变成史山...今天我们来铲史...
 published: 2026-04-19T10:05:45
 description: 什么？我只想改一个字看看预览都要等1分钟？这是什么神人项目啊？！
-image: /public//public/assets/images/astro.png
+image: /public/assets/images/astro.png
 draft: false
 lang: ""
 ---
@@ -48,7 +48,7 @@ export default defineConfig({
 
 的确，这样修改后 Astro 不会再操作图片，但是对于之后的写作，我们也需要将图片放在 `public` 文件夹
 
-而 Obsidian 的默认行为就是哪怕是粘贴绝对路径，如 `/public` 也不会自动添加前面的斜杠，所以我们需要找AI写一个小插件自动加上，否则会因为路径拼接错误导致图片404
+但 Obsidian 的默认行为就是哪怕是粘贴绝对路径，如 `/public` 也不会自动添加前面的斜杠，所以我们需要找AI写一个小插件自动加上，否则会因为路径拼接错误导致图片404： https://github.com/afoim/fuwari/tree/main/.obsidian/plugins/fix-public-links/main.js
 
 之后，Astro 将不会碰我们的图片，我们也能一如往常地去写作
 
