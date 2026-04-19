@@ -124,27 +124,27 @@ export const profileConfig: ProfileConfig = {
 	links: [
 		{
 			name: "QQ",
-			icon: "qq", // Local icon
+			icon: "simple-icons:qq",
 			url: "https://qm.qq.com/q/FWqOHlwL2m",
 		},
 		{
 			name: "Telegram",
-			icon: "telegram", // Local icon
+			icon: "simple-icons:telegram",
 			url: "https://t.me/+_07DERp7k1ljYTc1",
 		},
 		{
 			name: "Bilibli",
-			icon: "bilibili", // Local icon
+			icon: "simple-icons:bilibili",
 			url: "https://space.bilibili.com/325903362",
 		},
 		{
 			name: "GitHub",
-			icon: "github", // Local icon
+			icon: "simple-icons:github",
 			url: "https://github.com/afoim",
 		},
 		{
 			name: "Folo",
-			icon: "folo", // Local icon
+			icon: "simple-icons:folo",
 			url: "https://app.folo.is/share/feeds/245004133358075904",
 		},
 	],
