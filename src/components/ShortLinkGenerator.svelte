@@ -248,7 +248,7 @@ function getVisualLink(encoded: string): string {
 								<p class="mb-1 text-xs text-50">编码可视化（○=ZWSP, ●=ZWNJ）</p>
 								<div class="rounded-lg border border-white/10 bg-black/30 px-3 py-2">
 									<p class="text-xs text-50 break-all font-mono">
-										/s/?u={visualizeZwChars(link.encodedPart)}
+										/s/?○={visualizeZwChars(link.encodedPart)}
 									</p>
 								</div>
 							</div>
@@ -303,7 +303,7 @@ function getVisualLink(encoded: string): string {
 			</li>
 			<li>
 				<span class="font-medium text-90">链接格式：</span>
-				生成的链接格式为 <code class="px-1 bg-black/20 rounded">/s/?u=&lt;零宽编码&gt;</code>，零宽字符在浏览器地址栏中不可见，
+				生成的链接格式为 <code class="px-1 bg-black/20 rounded">/s/?&lt;零宽参数名&gt;=&lt;零宽编码&gt;</code>，零宽字符在浏览器地址栏中不可见，
 				所以不同 URL 生成的链接看起来完全一样。
 			</li>
 			<li>
@@ -353,7 +353,7 @@ function getVisualLink(encoded: string): string {
 			</div>
 		</div>
 		<p class="mt-4 text-xs text-white/45">
-			两个链接都显示为 /s/?，但点击后会跳转到不同网站。
+			两个链接都显示为 <code class="px-1 bg-black/20 rounded">/s/?</code>（查询参数完全不可见），但点击后会跳转到不同网站。
 		</p>
 	</div>
 </div>
