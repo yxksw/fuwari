@@ -130,13 +130,25 @@ function extractImageReferences(content) {
  * 规范化路径，处理相对路径和绝对路径
  */
 function normalizePath(imagePath, markdownFilePath) {
+	const projectRoot = process.cwd();
+	
 	// 跳过外部 URL
 	if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
 		return null;
 	}
 
-	// 跳过以 / 开头的绝对路径（通常指向 public 目录）
+	// 处理以 / 开头的绝对路径
 	if (imagePath.startsWith("/")) {
+		// 先尝试 public 目录
+		const publicPath = path.join(projectRoot, "public", imagePath);
+		if (fs.existsSync(publicPath)) {
+			return publicPath;
+		}
+		// 再尝试 src/content
+		const assetsPath = path.join(projectRoot, "src/content", imagePath);
+		if (fs.existsSync(assetsPath)) {
+			return assetsPath;
+		}
 		return null;
 	}
 
@@ -156,6 +168,7 @@ function normalizePath(imagePath, markdownFilePath) {
  */
 function extractImageDirectories(markdownFiles) {
 	const imageDirs = new Set();
+	const projectRoot = process.cwd();
 	
 	for (const mdFile of markdownFiles) {
 		try {
@@ -168,23 +181,34 @@ function extractImageDirectories(markdownFiles) {
 					continue;
 				}
 				
-				// 跳过以 / 开头的绝对路径（通常指向 public 目录）
-				if (ref.startsWith("/")) {
-					continue;
-				}
-				
-				// 处理相对路径，解析为绝对路径
+				// 处理路径
 				let imagePath;
-				if (ref.startsWith("./") || ref.startsWith("../")) {
+				
+				if (ref.startsWith("/")) {
+					// 以 / 开头的路径，可能指向 public 或 src/content/assets
+					// 先尝试 public 目录
+					const publicPath = path.join(projectRoot, "public", ref);
+					if (fs.existsSync(publicPath) && fs.statSync(publicPath).isFile()) {
+						imagePath = publicPath;
+					} else {
+						// 再尝试 src/content/assets
+						const assetsPath = path.join(projectRoot, "src/content", ref);
+						if (fs.existsSync(assetsPath) && fs.statSync(assetsPath).isFile()) {
+							imagePath = assetsPath;
+						}
+					}
+				} else if (ref.startsWith("./") || ref.startsWith("../")) {
+					// 相对路径
 					const markdownDir = path.dirname(mdFile);
 					imagePath = path.resolve(markdownDir, ref);
 				} else {
+					// 直接的文件名或相对路径
 					const markdownDir = path.dirname(mdFile);
 					imagePath = path.resolve(markdownDir, ref);
 				}
 				
 				// 检查文件是否存在且是图片
-				if (fs.existsSync(imagePath) && fs.statSync(imagePath).isFile()) {
+				if (imagePath && fs.existsSync(imagePath) && fs.statSync(imagePath).isFile()) {
 					const ext = path.extname(imagePath).toLowerCase();
 					if (IMAGE_EXTENSIONS.includes(ext)) {
 						// 添加图片所在的目录
