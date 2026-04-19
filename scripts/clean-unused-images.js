@@ -15,10 +15,8 @@ import {
 /**
  * 清理未使用的图片资源脚本
  * 扫描 src/content/posts 下的所有 markdown 文件，
- * 查找 src/content/assets 中未被引用的图片并删除
+ * 自动识别文章中引用的本地图片目录，并清理未被引用的图片
  */
-
-const ASSETS_DIR = path.join(CONTENT_DIR, "assets/images");
 
 // 支持的图片格式
 const IMAGE_EXTENSIONS = [
@@ -47,17 +45,20 @@ async function getAllMarkdownFiles() {
 }
 
 /**
- * 获取所有图片文件
+ * 获取所有图片文件（从指定目录）
  */
-async function getAllImageFiles() {
+async function getAllImageFiles(imageDir) {
 	try {
+		if (!fs.existsSync(imageDir)) {
+			return [];
+		}
 		const extensions = IMAGE_EXTENSIONS.join(",");
 		const pattern = path
-			.join(ASSETS_DIR, `**/*{${extensions}}`)
+			.join(imageDir, `**/*{${extensions}}`)
 			.replace(/\\/g, "/");
 		return await listFiles(pattern);
 	} catch (error) {
-		console.error("获取图片文件失败:", error.message);
+		console.error(`获取图片文件失败 (${imageDir}):`, error.message);
 		return [];
 	}
 }
@@ -151,6 +152,91 @@ function normalizePath(imagePath, markdownFilePath) {
 }
 
 /**
+ * 从所有 markdown 文件中提取本地图片目录
+ */
+function extractImageDirectories(markdownFiles) {
+	const imageDirs = new Set();
+	
+	for (const mdFile of markdownFiles) {
+		try {
+			const content = fs.readFileSync(mdFile, "utf-8");
+			const references = extractImageReferences(content);
+			
+			for (const ref of references) {
+				// 跳过外部 URL
+				if (ref.startsWith("http://") || ref.startsWith("https://")) {
+					continue;
+				}
+				
+				// 跳过以 / 开头的绝对路径（通常指向 public 目录）
+				if (ref.startsWith("/")) {
+					continue;
+				}
+				
+				// 处理相对路径，解析为绝对路径
+				let imagePath;
+				if (ref.startsWith("./") || ref.startsWith("../")) {
+					const markdownDir = path.dirname(mdFile);
+					imagePath = path.resolve(markdownDir, ref);
+				} else {
+					const markdownDir = path.dirname(mdFile);
+					imagePath = path.resolve(markdownDir, ref);
+				}
+				
+				// 检查文件是否存在且是图片
+				if (fs.existsSync(imagePath) && fs.statSync(imagePath).isFile()) {
+					const ext = path.extname(imagePath).toLowerCase();
+					if (IMAGE_EXTENSIONS.includes(ext)) {
+						// 添加图片所在的目录
+						const imageDir = path.dirname(imagePath);
+						imageDirs.add(imageDir);
+					}
+				}
+			}
+		} catch (error) {
+			console.warn(`⚠️  读取文件失败: ${mdFile} - ${error.message}`);
+		}
+	}
+	
+	return Array.from(imageDirs);
+}
+
+/**
+ * 找到所有图片目录的共同根目录
+ */
+function findCommonRootDirectories(imageDirs) {
+	if (imageDirs.length === 0) {
+		return [];
+	}
+	
+	// 按路径深度排序，找出最顶层的目录
+	const sortedDirs = imageDirs.sort((a, b) => {
+		const depthA = a.split(path.sep).length;
+		const depthB = b.split(path.sep).length;
+		return depthA - depthB;
+	});
+	
+	const rootDirs = new Set();
+	
+	for (const dir of sortedDirs) {
+		// 检查是否已经有父目录在 rootDirs 中
+		let hasParent = false;
+		for (const rootDir of rootDirs) {
+			if (dir.startsWith(rootDir + path.sep) || dir === rootDir) {
+				hasParent = true;
+				break;
+			}
+		}
+		
+		if (!hasParent) {
+			rootDirs.add(dir);
+		}
+	}
+	
+	return Array.from(rootDirs);
+}
+
+/**
  * 主函数
  */
 async function cleanUnusedImages() {
@@ -162,28 +248,32 @@ async function cleanUnusedImages() {
 		return;
 	}
 
-	if (!fs.existsSync(ASSETS_DIR)) {
-		console.log(`ℹ️  Assets 目录不存在: ${ASSETS_DIR}`);
-		return;
-	}
-
-	// 获取所有文件
+	// 获取所有 markdown 文件
 	const markdownFiles = await getAllMarkdownFiles();
-	const imageFiles = await getAllImageFiles();
 
 	if (markdownFiles.length === 0) {
-		console.error("No markdown files found. Abort to avoid accidental image deletion.");
+		console.error("❌ 未找到 markdown 文件，为避免误删，终止执行");
 		return;
 	}
-
 
 	console.log(`📄 找到 ${markdownFiles.length} 个 markdown 文件`);
-	console.log(`🖼️  找到 ${imageFiles.length} 个图片文件`);
 
-	if (imageFiles.length === 0) {
-		console.log("✅ 没有找到图片文件，无需清理");
+	// 从文章中提取图片目录
+	console.log("� 正在分析文章中引用的图片目录...");
+	const imageDirs = extractImageDirectories(markdownFiles);
+	
+	if (imageDirs.length === 0) {
+		console.log("ℹ️  未在文章中找到本地图片引用，无需清理");
 		return;
 	}
+	
+	// 找到根目录
+	const rootDirs = findCommonRootDirectories(imageDirs);
+	
+	console.log(`📁 找到 ${rootDirs.length} 个图片根目录:`);
+	rootDirs.forEach(dir => {
+		console.log(`   - ${path.relative(process.cwd(), dir)}`);
+	});
 
 	// 收集所有被引用的图片
 	const referencedImages = new Set();
@@ -207,10 +297,24 @@ async function cleanUnusedImages() {
 
 	console.log(`🔗 找到 ${referencedImages.size} 个被引用的图片`);
 
+	// 扫描所有根目录下的图片文件
+	let allImageFiles = [];
+	for (const rootDir of rootDirs) {
+		const images = await getAllImageFiles(rootDir);
+		allImageFiles = allImageFiles.concat(images);
+	}
+	
+	console.log(`🖼️  在目标目录中找到 ${allImageFiles.length} 个图片文件`);
+
+	if (allImageFiles.length === 0) {
+		console.log("✅ 没有找到图片文件，无需清理");
+		return;
+	}
+
 	// 找出未被引用的图片
 	const unusedImages = [];
 
-	for (const imageFile of imageFiles) {
+	for (const imageFile of allImageFiles) {
 		const resolvedImagePath = path.resolve(imageFile);
 		const isReferenced = referencedImages.has(resolvedImagePath);
 
@@ -240,10 +344,12 @@ async function cleanUnusedImages() {
 	}
 
 	// 清理空目录
-	try {
-		cleanEmptyDirectories(ASSETS_DIR);
-	} catch (error) {
-		console.warn(`⚠️  清理空目录时出错: ${error.message}`);
+	for (const rootDir of rootDirs) {
+		try {
+			cleanEmptyDirectories(rootDir);
+		} catch (error) {
+			console.warn(`⚠️  清理空目录时出错 (${rootDir}): ${error.message}`);
+		}
 	}
 
 	console.log(`\n✅ 清理完成！删除了 ${deletedCount} 个未使用的图片文件`);
