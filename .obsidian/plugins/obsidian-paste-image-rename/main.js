@@ -546,7 +546,9 @@ var PasteImageRenamePlugin = class extends import_obsidian2.Plugin {
         return;
       }
       let newLinkText = this.app.fileManager.generateMarkdownLink(file, sourcePath);
-      newLinkText = newLinkText.replace(/public\//g, "/");
+      if (newLinkText.startsWith("public/")) {
+        newLinkText = "/" + newLinkText.substring(7);
+      }
       debugLog("replace text", linkText, newLinkText);
       const editor = this.getActiveEditor();
       if (!editor) {
