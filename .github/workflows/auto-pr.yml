@@ -279,7 +279,7 @@ jobs:
                 
                 fs.writeFileSync(scriptPath, script)
                 
-                const result = execSync(\`node "\${scriptPath}" "\${url}"\`, {
+                const result = execSync('node "' + scriptPath + '" "' + url + '"', {
                   encoding: 'utf8',
                   timeout: 35000,
                   maxBuffer: 10 * 1024 * 1024
@@ -1142,7 +1142,7 @@ jobs:
                 
                 fs.writeFileSync(scriptPath, script)
                 
-                const result = execSync(\`node "\${scriptPath}" "\${url}"\`, {
+                const result = execSync('node "' + scriptPath + '" "' + url + '"', {
                   encoding: 'utf8',
                   timeout: 35000,
                   maxBuffer: 10 * 1024 * 1024
